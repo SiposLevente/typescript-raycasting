@@ -1,0 +1,14 @@
+
+canvas {
+    position: fixed;
+    border:1px solid #000000;
+    top: 0px;
+    left: 0px;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+}
+
+
+body {
+    background-color: black;
+}
