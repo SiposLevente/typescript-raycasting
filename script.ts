@@ -177,7 +177,7 @@ async function main() {
 async function scan(start_position: Position) {
     let line_length_multipier = 10000;
     for (let i = 0; i < 361; i++) {
-        DrawRay(start_position, new Position(start_position.x + Math.sin(i) * line_length_multipier, start_position.y + Math.cos(i) * line_length_multipier), white);
+        DrawRay(start_position, new Position(start_position.x + Math.sin(i*Math.PI/180) * line_length_multipier, start_position.y + Math.cos(i*Math.PI/180) * line_length_multipier), white);
     }
 }
 
@@ -221,7 +221,7 @@ function DrawRay(start: Position, end: Position, color: Color) {
     ctx.lineTo(end_point.x, end_point.y);
     ctx.strokeStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
     ctx.stroke();
-    
+
 }
 
 function ClearCanvas() {
