@@ -14,10 +14,24 @@ class Position {
 }
 
 class CanvasBody {
-    sides: Line[];
+    constructor(public sides: Line[]) {}
 
-    constructor() {
-        this.sides = []
+    generateSides(xMin: number, xMax: number, yMin: number, yMax: number) {
+        const lines: Line[] = [
+            new Line(
+                new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)), 
+                new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
+
+        let j = 0;
+        for (; j < GenerateRandomNumber(1, 8); j++) {
+            lines.push(new Line(lines[j].endPoint, new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
+        }
+
+        if (GenerateRandomNumber(0, 4) == 0) {
+            lines.push(new Line(lines[j].endPoint, lines[0].startPoint));
+        }
+
+        this.sides = lines;
     }
 
     public AddSide(line: Line) {
@@ -209,11 +223,8 @@ function Setup() {
     const l2 = new Line(new Position(canvasWidth, 0), new Position(canvasWidth, canvasHeight));
     const l3 = new Line(new Position(canvasWidth, canvasHeight), new Position(0, canvasHeight),);
     const l4 = new Line(new Position(0, canvasHeight), new Position(0, 0));
-    const body = new CanvasBody();
-    body.AddSide(l1);
-    body.AddSide(l2);
-    body.AddSide(l3);
-    body.AddSide(l4);
+
+    const body = new CanvasBody([l1, l2, l3, l4]);
     bodies.push(body);
 
     const divider = 50;
@@ -224,40 +235,26 @@ function Setup() {
     const yMax = canvasHeight - yMin;
 
     for (let i = 0; i < GenerateRandomNumber(1, 3); i++) {
-        const lines: Line[] = [new Line(new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)), new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
-        const body = new CanvasBody();
-        let j = 0;
-        for (; j < GenerateRandomNumber(1, 8); j++) {
-            lines.push(new Line(lines[j].endPoint, new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
-        }
-
-        if (GenerateRandomNumber(0, 4) == 0) {
-            lines.push(new Line(lines[j].endPoint, lines[0].startPoint));
-        }
-
-        lines.forEach(line => {
-            body.AddSide(line)
-        });
-
+        const body = new CanvasBody([])
+        body.generateSides(xMin, xMax, yMin, yMax);
         bodies.push(body);
     }
-
 }
 
 Main();
 async function Main() {
     Setup();
-    addEventListener("keydown", (e) => KeyDownListener(e, true), false);
-    addEventListener("keyup", (e) => KeyDownListener(e, false), false);
+    addEventListener("keydown", (e) => KeyPressController.Listen(e, true), false);
+    addEventListener("keyup", (e) => KeyPressController.Listen(e, false), false);
     setInterval(GameLoop, 100);
 }
 
 function GameLoop() {
     ClearCanvas();
-    HandleKeys();
+    KeyPressController.HandleKeys();
     DrawGround();
     Scan(player);
-    if (keyController.keys.get("m")) {
+    if (KeyPressController.getKey("m")) {
         bodies.forEach(body => {
             body.Draw();
         });
