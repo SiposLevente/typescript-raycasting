@@ -329,47 +329,39 @@ function DrawLine(start: Position, end: Position, color: Color) {
 }
 
 function DrawRay(start: Position, end: Position, color: Color) {
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    let startLine = new Line(start, end);
-    let endPoint: Position = end;
-    let intersectingPoints: Position[] = [end];
-    bodies.forEach(body => {
-        body.sides.forEach(line => {
-            let intersectingPoint = startLine.Intersects(line);
-            if (intersectingPoint) {
-
-                intersectingPoints.push(intersectingPoint);
-            }
-        });
-    });
-
-    intersectingPoints.forEach(point => {
-        if (start.Distance(endPoint) > start.Distance(point)) {
-            endPoint = point;
-        }
-    });
-    ctx.lineTo(endPoint.x, endPoint.y);
-    ctx.strokeStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
-    ctx.stroke();
+    const rayEnd = getIntersectingPosition(start, end);
+    DrawLine(start, rayEnd, color);
 }
 
-function getDistanceForSegment(start: Position, end: Position): number {
-    const startLine = new Line(start, end);
-    let bestDistance = start.Distance(end);
+function getIntersectingPosition(start: Position, end: Position): Position {
+    const line = new Line(start, end);
+
+    let closestPoint = end;
+    let closestDistance = start.Distance(end);
 
     for (const body of bodies) {
         for (const side of body.sides) {
-            const intersection = startLine.Intersects(side);
+            const intersection = line.Intersects(side);
 
             if (intersection) {
-                const distance = start.Distance(intersection);
-                bestDistance = Math.min(bestDistance, distance);
+                const distance = start.Distance(intersection)
+
+                if (distance < closestDistance) {
+                    closestPoint = intersection;
+                    closestDistance = distance;
+                }
             }
         }
     }
 
-    return bestDistance;
+    return closestPoint;
+}
+
+function getDistanceForSegment(start: Position, end: Position): number {
+    const startLine = new Line(start, end);
+    const closestPoint = getIntersectingPosition(start, end);
+
+    return start.Distance(closestPoint);
 }
 
 function ClearCanvas() {
