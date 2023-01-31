@@ -1,8 +1,16 @@
-interface Color {
-    Red: number,
-    Green: number,
-    Blue: number,
-    Alpha: number,
+class Color {
+    Red: number;
+    Green: number;
+    Blue: number;
+    Alpha: number;
+
+    constructor(red: number, green: number, blue: number, alpha: number) {
+        this.Red = red;
+        this.Green = green;
+        this.Blue = blue;
+        this.Alpha = alpha;
+
+    }
 }
 
 class Position {
@@ -131,7 +139,6 @@ class Player {
     GoSideWays(ammount: number) {
         this.position = new Position(this.position.x + (ammount * Math.sin((this.view_direction + 90) % 360 * Math.PI / 180)), this.position.y + (ammount * Math.cos((this.view_direction + 90) % 360 * Math.PI / 180)));
     }
-
 }
 
 
@@ -141,9 +148,6 @@ class KeyPressController {
     constructor() {
         this.keys = new Map();
     }
-
-
-
 }
 
 function GenerateRandomNumber(min: number, max: number): number {
@@ -243,27 +247,26 @@ async function Main() {
     Setup();
     addEventListener("keydown", (e) => KeyDownListener(e, true), false);
     addEventListener("keyup", (e) => KeyDownListener(e, false), false);
-    setInterval(GameLoop, 100);
-}
+    addEventListener("resize", (e) => WindowResizeListener(e), false);
 
-function GameLoop() {
-    ClearCanvas();
-    HandleKeys();
-    DrawGround();
-    Scan(player);
-    if (keyController.keys.get("m")) {
-        bodies.forEach(body => {
-            body.Draw();
-        });
-    }
+    setInterval(() => {
+        ClearCanvas();
+        HandleKeys();
+        DrawGround();
+        Scan(player);
+        if (keyController.keys.get("m")) {
+            bodies.forEach(body => {
+                body.Draw();
+            });
+        }
+    }, 100);
 }
 
 async function Scan(player: Player) {
     let lineLengthMultiplier = 10000;
     let iterating_number = 0.025;
-
     let centerCounter = canvasWidth - (canvasWidth / (canvasWidth / viewAngle / iterating_number)) / 2;
-    for (let i = -viewAngle / 2; i < (viewAngle) / 2; i += iterating_number) {
+    for (let i = -viewAngle / 2 / (1080 / canvasWidth); i < (viewAngle) / 2 / (1080 / canvasWidth); i += iterating_number) {
         let distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
 
         DrawSegment(distance, new Position(centerCounter, canvasHeight / 2), iterating_number);
@@ -280,7 +283,7 @@ async function Scan(player: Player) {
 
 function DrawSegment(distance: number, center: Position, modifier: number) {
     ctx.beginPath();
-    let width: number = (canvasWidth / viewAngle * modifier)+1;
+    let width: number = (canvasWidth / viewAngle * modifier) + 1;
     let distancePercent = (1500 / distance) * 15;
     let height: number = distancePercent;
     if (height > canvasHeight) {
@@ -444,4 +447,11 @@ function KeyDownListener(e: KeyboardEvent, modificationType: boolean) {
             keyController.keys.set(e.key, modificationType);
             break;
     }
+}
+
+function WindowResizeListener(e: UIEvent) {
+    canvas.width = screen.width;
+    canvas.height = screen.height;
+    canvasWidth = canvas.width;
+    canvasHeight = canvas.height;
 }
