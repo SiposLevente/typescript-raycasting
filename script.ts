@@ -355,25 +355,21 @@ function DrawRay(start: Position, end: Position, color: Color) {
 }
 
 function getDistanceForSegment(start: Position, end: Position): number {
-    let startLine = new Line(start, end);
-    let endPoint: Position = end;
-    let intersectingPoints: Position[] = [end];
-    bodies.forEach(body => {
-        body.sides.forEach(line => {
-            let intersectingPoint = startLine.Intersects(line);
-            if (intersectingPoint) {
+    const startLine = new Line(start, end);
+    let bestDistance = start.Distance(end);
 
-                intersectingPoints.push(intersectingPoint);
+    for (const body of bodies) {
+        for (const side of body.sides) {
+            const intersection = startLine.Intersects(side);
+
+            if (intersection) {
+                const distance = start.Distance(intersection);
+                bestDistance = Math.min(bestDistance, distance);
             }
-        });
-    });
-
-    intersectingPoints.forEach(point => {
-        if (start.Distance(endPoint) > start.Distance(point)) {
-            endPoint = point;
         }
-    });
-    return start.Distance(endPoint);
+    }
+
+    return bestDistance;
 }
 
 function ClearCanvas() {
