@@ -224,7 +224,7 @@ function Setup() {
         for (; j < GenerateRandomNumber(1, 4); j++) {
             lines.push(new Line(lines[j].endPoint, new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
         }
-        
+
         if (GenerateRandomNumber(0, 10) != 0) {
             lines.push(new Line(lines[j].endPoint, lines[0].startPoint));
         }
@@ -265,15 +265,17 @@ async function Scan(player: Player) {
         let distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
 
         DrawSegment(distance, new Position(centerCounter, canvasHeight / 2));
-        if (keyController.keys.get("m")) {
-            DrawRay(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier), green);
-            DrawDot(player.position, red, 2);
-        }
 
         centerCounter -= (canvasWidth / (canvasWidth / viewAngle)) - 1;
     }
-}
+    if (keyController.keys.get("m")) {
+        for (let i = -viewAngle / 2; i < viewAngle / 2; i++) {
 
+            DrawRay(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier), green);
+            DrawDot(player.position, red, 2);
+        }
+    }
+}
 
 function DrawSegment(distance: number, center: Position) {
     ctx.beginPath();
