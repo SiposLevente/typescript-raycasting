@@ -199,7 +199,7 @@ class KeyPressController {
     }
 
     public static Listen(e: KeyboardEvent, modificationType: boolean) {
-        const keys: string[] = ["s", "m", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"] satisfies Array<KeyboardEvent["key"]>;
+        const keys: string[] = ["s", "m", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
 
         if (keys.includes(e.key)) {
             this.keys.set(e.key, modificationType);
