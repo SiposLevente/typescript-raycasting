@@ -6,13 +6,7 @@ interface Color {
 }
 
 class Position {
-    x: number;
-    y: number;
-
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
+    constructor(public x: number, public y: number) {}
 
     public Distance(otherPoint: Position): number {
         return Math.sqrt(Math.pow((otherPoint.x - this.x), 2) + Math.pow(otherPoint.y - this.y, 2));
@@ -50,14 +44,14 @@ class Line {
         DrawLine(this.startPoint, this.endPoint, red);
     }
 
-    public Intersects(boundry: Line): Position | null {
+    public Intersects(boundary: Line): Position | null {
         // this start x1 y1 -  end x2 y2
         // boundry x3 y3 -  end x4 y4
 
         const lS = this.startPoint;
         const lE = this.endPoint;
-        const bS = boundry.startPoint;
-        const bE = boundry.endPoint
+        const bS = boundary.startPoint;
+        const bE = boundary.endPoint
 
         const divisor = (lS.x - lE.x) * (bS.y - bE.y) - (lS.y - lE.y) * (bS.x - bE.x)
 
@@ -100,7 +94,6 @@ class Player {
         this.position = new Position(x, y);
         this.speed = 10;
         this.view_direction = 0;
-
     }
 
     public GetViewDirection(): number {
@@ -167,42 +160,44 @@ function GenerateRandomNumber(min: number, max: number): number {
 
 // -------------------------------------------------------
 
-let canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
-let ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>canvas.getContext("2d");
-canvas.height = screen.height;
-canvas.width = screen.width;
-let viewAngle = 45;
-let canvasWidth: number = canvas.width;
-let canvasHeight: number = canvas.height;
-let player: Player = new Player(canvasWidth / 2, canvasHeight / 2);
-let keyController = new KeyPressController();
-let bodies: CanvasBody[] = [];
+const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
+const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>canvas.getContext("2d");
 
-let white: Color = {
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+
+const viewAngle = 45;
+const canvasWidth: number = canvas.width;
+const canvasHeight: number = canvas.height;
+const player: Player = new Player(canvasWidth / 2, canvasHeight / 2);
+const keyController = new KeyPressController();
+const bodies: CanvasBody[] = [];
+
+const white: Color = {
     Red: 255,
     Green: 255,
     Blue: 255,
     Alpha: 255,
 }
-let black: Color = {
+const black: Color = {
     Red: 0,
     Green: 0,
     Blue: 0,
     Alpha: 0,
 }
-let red: Color = {
+const red: Color = {
     Red: 255,
     Green: 0,
     Blue: 0,
     Alpha: 255,
 }
-let green: Color = {
+const green: Color = {
     Red: 0,
     Green: 255,
     Blue: 0,
     Alpha: 255,
 }
-let blue: Color = {
+const blue: Color = {
     Red: 0,
     Green: 0,
     Blue: 255,
@@ -210,27 +205,27 @@ let blue: Color = {
 }
 
 function Setup() {
-    let l1 = new Line(new Position(0, 0), new Position(canvasWidth, 0));
-    let l2 = new Line(new Position(canvasWidth, 0), new Position(canvasWidth, canvasHeight));
-    let l3 = new Line(new Position(canvasWidth, canvasHeight), new Position(0, canvasHeight),);
-    let l4 = new Line(new Position(0, canvasHeight), new Position(0, 0));
-    let body = new CanvasBody();
+    const l1 = new Line(new Position(0, 0), new Position(canvasWidth, 0));
+    const l2 = new Line(new Position(canvasWidth, 0), new Position(canvasWidth, canvasHeight));
+    const l3 = new Line(new Position(canvasWidth, canvasHeight), new Position(0, canvasHeight),);
+    const l4 = new Line(new Position(0, canvasHeight), new Position(0, 0));
+    const body = new CanvasBody();
     body.AddSide(l1);
     body.AddSide(l2);
     body.AddSide(l3);
     body.AddSide(l4);
     bodies.push(body);
 
-    let divider = 50;
-    let xMin = canvasWidth / divider;
-    let yMin = canvasHeight / divider;
+    const divider = 50;
+    const xMin = canvasWidth / divider;
+    const yMin = canvasHeight / divider;
 
-    let xMax = canvasWidth - xMin;
-    let yMax = canvasHeight - yMin;
+    const xMax = canvasWidth - xMin;
+    const yMax = canvasHeight - yMin;
 
     for (let i = 0; i < GenerateRandomNumber(1, 3); i++) {
-        let lines: Line[] = [new Line(new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)), new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
-        let body = new CanvasBody();
+        const lines: Line[] = [new Line(new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)), new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
+        const body = new CanvasBody();
         let j = 0;
         for (; j < GenerateRandomNumber(1, 8); j++) {
             lines.push(new Line(lines[j].endPoint, new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
@@ -270,12 +265,12 @@ function GameLoop() {
 }
 
 async function Scan(player: Player) {
-    let lineLengthMultiplier = 10000;
-    let iterating_number = 0.025;
+    const lineLengthMultiplier = 10000;
+    const iterating_number = 0.025;
 
     let centerCounter = canvasWidth - (canvasWidth / (canvasWidth / viewAngle / iterating_number)) / 2;
     for (let i = -viewAngle / 2; i < (viewAngle) / 2; i += iterating_number) {
-        let distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
+        const distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
 
         DrawSegment(distance, new Position(centerCounter, canvasHeight / 2), iterating_number);
 
@@ -291,14 +286,14 @@ async function Scan(player: Player) {
 
 function DrawSegment(distance: number, center: Position, modifier: number) {
     ctx.beginPath();
-    let width: number = (canvasWidth / viewAngle * modifier)+1;
-    let distancePercent = (1500 / distance) * 15;
-    let height: number = distancePercent;
-    if (height > canvasHeight) {
+    const width: number = (canvasWidth / viewAngle * modifier)+1;
+    const distancePercent = (1500 / distance) * 15;
+    const height: number = Math.min(canvasHeight, distancePercent);
+    /*if (height > canvasHeight) {
         height = canvasHeight;
-    }
+    }*/
 
-    let color = 255 - (255 * (1 - distancePercent / 250));
+    const color = 255 - (255 * (1 - distancePercent / 250));
 
     ctx.fillStyle = `rgb(${color},${color},${color},255)`;
     ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
@@ -313,11 +308,11 @@ function DrawRect(start: Position, width: number, height: number, color: Color) 
 }
 
 function DrawGround() {
-    let halfway = new Position(0, canvasHeight / 2);
-    let color = 0;
-    let segments = 8;
+    const halfway = new Position(0, canvasHeight / 2);
+    const color = 0;
+    const segments = 8;
     for (let i = 0; i < segments; i++) {
-        let color = 10 + 10 * i;
+        const color = 10 + 10 * i;
         DrawRect(new Position(halfway.x, halfway.y), canvasWidth, canvasHeight, { Red: 50 + color, Green: 50 + color, Blue: color, Alpha: 255 });
         halfway.y += canvasHeight / (segments * segments - segments * i)
     }
@@ -350,8 +345,8 @@ function getIntersectingPosition(start: Position, end: Position): Position {
     let closestPoint = end;
     let closestDistance = start.Distance(end);
 
-    for (const body of bodies) {
-        for (const side of body.sides) {
+    for (let body of bodies) {
+        for (let side of body.sides) {
             const intersection = line.Intersects(side);
 
             if (intersection) {
