@@ -1,4 +1,4 @@
-interface Color {
+type Color = {
     Red: number,
     Green: number,
     Blue: number,
@@ -93,7 +93,7 @@ class Line {
     }
 }
 
-enum Direction {
+const enum Direction {
     Forward,
     Backwards
 }
@@ -141,12 +141,12 @@ class Player {
         );
     }
 
-    Go(amount: number) {
+    private Go(amount: number) {
         const angle = this.view_direction * Math.PI / 180;
         this.Move(angle, amount);
     }
 
-    GoSideWays(amount: number) {
+    private GoSideWays(amount: number) {
         const angle = (this.view_direction + 90) % 360 * Math.PI / 180
         this.Move(angle, amount);
     }
@@ -324,10 +324,6 @@ function DrawSegment(distance: number, center: Position, modifier: number) {
     const width: number = (canvasWidth / viewAngle * modifier)+1;
     const distancePercent = (1500 / distance) * 15;
     const height: number = Math.min(canvasHeight, distancePercent);
-    /*if (height > canvasHeight) {
-        height = canvasHeight;
-    }*/
-
     const color = 255 - (255 * (1 - distancePercent / 250));
 
     ctx.fillStyle = `rgb(${color},${color},${color},255)`;
@@ -399,7 +395,6 @@ function getIntersectingPosition(start: Position, end: Position): Position {
 }
 
 function getDistanceForSegment(start: Position, end: Position): number {
-    const startLine = new Line(start, end);
     const closestPoint = getIntersectingPosition(start, end);
 
     return start.Distance(closestPoint);
