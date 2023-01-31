@@ -217,15 +217,15 @@ function Setup() {
     let xMax = canvasWidth - xMin;
     let yMax = canvasHeight - yMin;
 
-    for (let i = 0; i < GenerateRandomNumber(1, 2); i++) {
+    for (let i = 0; i < GenerateRandomNumber(1, 3); i++) {
         let lines: Line[] = [new Line(new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)), new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
         let body = new CanvasBody();
         let j = 0;
-        for (; j < GenerateRandomNumber(1, 4); j++) {
+        for (; j < GenerateRandomNumber(1, 8); j++) {
             lines.push(new Line(lines[j].endPoint, new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
         }
 
-        if (GenerateRandomNumber(0, 10) != 0) {
+        if (GenerateRandomNumber(0, 4) == 0) {
             lines.push(new Line(lines[j].endPoint, lines[0].startPoint));
         }
 
@@ -260,26 +260,27 @@ function GameLoop() {
 
 async function Scan(player: Player) {
     let lineLengthMultiplier = 10000;
-    let centerCounter = canvasWidth - (canvasWidth / (canvasWidth / viewAngle)) / 2;
-    for (let i = -viewAngle / 2; i < viewAngle / 2; i++) {
+    let iterating_number = 0.025;
+
+    let centerCounter = canvasWidth - (canvasWidth / (canvasWidth / viewAngle / iterating_number)) / 2;
+    for (let i = -viewAngle / 2; i < (viewAngle) / 2; i += iterating_number) {
         let distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
 
-        DrawSegment(distance, new Position(centerCounter, canvasHeight / 2));
+        DrawSegment(distance, new Position(centerCounter, canvasHeight / 2), iterating_number);
 
-        centerCounter -= (canvasWidth / (canvasWidth / viewAngle)) - 1;
+        centerCounter -= (canvasWidth / (canvasWidth / viewAngle / iterating_number));
     }
     if (keyController.keys.get("m")) {
-        for (let i = -viewAngle / 2; i < viewAngle / 2; i++) {
-
+        for (let i = -viewAngle / 2; i < viewAngle / 2; i += iterating_number) {
             DrawRay(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier), green);
             DrawDot(player.position, red, 2);
         }
     }
 }
 
-function DrawSegment(distance: number, center: Position) {
+function DrawSegment(distance: number, center: Position, modifier: number) {
     ctx.beginPath();
-    let width: number = (canvasWidth / viewAngle) + 2;
+    let width: number = (canvasWidth / viewAngle * modifier)+1;
     let distancePercent = (1500 / distance) * 15;
     let height: number = distancePercent;
     if (height > canvasHeight) {
@@ -303,10 +304,11 @@ function DrawRect(start: Position, width: number, height: number, color: Color) 
 function DrawGround() {
     let halfway = new Position(0, canvasHeight / 2);
     let color = 0;
-    for (let i = 0; i < 6; i++) {
+    let segments = 8;
+    for (let i = 0; i < segments; i++) {
         let color = 10 + 10 * i;
         DrawRect(new Position(halfway.x, halfway.y), canvasWidth, canvasHeight, { Red: 50 + color, Green: 50 + color, Blue: color, Alpha: 255 });
-        halfway.y += canvasHeight / (25 - 5 * i)
+        halfway.y += canvasHeight / (segments * segments - segments * i)
     }
 
 }
