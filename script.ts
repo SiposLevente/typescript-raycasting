@@ -224,7 +224,8 @@ function Setup() {
         for (; j < GenerateRandomNumber(1, 4); j++) {
             lines.push(new Line(lines[j].endPoint, new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
         }
-        if (GenerateRandomNumber(0, 2) == 2) {
+        
+        if (GenerateRandomNumber(0, 10) != 0) {
             lines.push(new Line(lines[j].endPoint, lines[0].startPoint));
         }
 
