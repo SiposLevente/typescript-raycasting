@@ -154,14 +154,53 @@ class Player {
 
 
 class KeyPressController {
-    keys: Map<string, boolean>;
+    private static keys: Map<string, boolean> = new Map();
+    private constructor() {}
 
-    constructor() {
-        this.keys = new Map();
+    public static HandleKeys() {
+        this.keys.forEach((value, key) => {
+            if (value) {
+                switch (key) {
+                    case "ArrowLeft":
+                        if (this.keys.get("s")) {
+                            player.GoRight();
+                        } else {
+                            player.Turn(5);
+                        }
+                        break;
+
+                    case "ArrowRight":
+                        if (this.keys.get("s")) {
+                            player.GoLeft();
+
+                        } else {
+                            player.Turn(-5);
+                        }
+                        break;
+
+                    case "ArrowUp":
+                        player.Forward();
+                        break;
+
+                    case "ArrowDown":
+                        player.Backwards();
+                        break;
+                }
+            }
+        });
     }
 
+    public static Listen(e: KeyboardEvent, modificationType: boolean) {
+        const keys: string[] = ["s", "m", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"] satisfies Array<KeyboardEvent["key"]>;
 
+        if (keys.includes(e.key)) {
+            this.keys.set(e.key, modificationType);
+        }
+    }
 
+    public static getKey(key: string): boolean {
+        return this.keys.get(key) ?? false;
+    }
 }
 
 function GenerateRandomNumber(min: number, max: number): number {
@@ -184,7 +223,6 @@ const viewAngle = 45;
 const canvasWidth: number = canvas.width;
 const canvasHeight: number = canvas.height;
 const player: Player = new Player(canvasWidth / 2, canvasHeight / 2);
-const keyController = new KeyPressController();
 const bodies: CanvasBody[] = [];
 
 const white: Color = {
@@ -273,7 +311,7 @@ async function Scan(player: Player) {
 
         centerCounter -= (canvasWidth / (canvasWidth / viewAngle / iterating_number));
     }
-    if (keyController.keys.get("m")) {
+    if (KeyPressController.getKey("m")) {
         for (let i = -viewAngle / 2; i < viewAngle / 2; i += iterating_number) {
             DrawRay(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier), green);
             DrawDot(player.position, red, 2);
@@ -374,45 +412,4 @@ function ClearCanvas() {
 
 function Sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function HandleKeys() {
-    keyController.keys.forEach((value, key) => {
-        if (value) {
-            switch (key) {
-                case "ArrowLeft":
-                    if (keyController.keys.get("s")) {
-                        player.GoRight();
-                    } else {
-                        player.Turn(5);
-                    }
-                    break;
-
-                case "ArrowRight":
-                    if (keyController.keys.get("s")) {
-                        player.GoLeft();
-
-                    } else {
-                        player.Turn(-5);
-                    }
-                    break;
-
-                case "ArrowUp":
-                    player.Forward();
-                    break;
-
-                case "ArrowDown":
-                    player.Backwards();
-                    break;
-            }
-        }
-    });
-}
-
-function KeyDownListener(e: KeyboardEvent, modificationType: boolean) {
-    const keys: string[] = ["s", "m", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"] satisfies Array<KeyboardEvent["key"]>;
-
-    if (keys.includes(e.key)) {
-        keyController.keys.set(e.key, modificationType);
-    }
 }
