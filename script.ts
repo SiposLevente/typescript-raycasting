@@ -127,22 +127,22 @@ class Player {
         this.GoSideWays(-player.speed)
     }
 
-    public NextPosition(direction: Direction): Position {
-        let multiplier = 1;
-        if (direction == Direction.Backwards) {
-            multiplier = -1;
-        }
-        return new Position(this.position.x + (multiplier * (this.speed) * Math.sin(this.view_direction * Math.PI / 180)), this.position.y + (multiplier * this.speed * Math.cos(this.view_direction * Math.PI / 180)));
+    private Move(angle: number, amount: number) {
+        this.position = new Position(
+            this.position.x + (amount * Math.sin(angle)), 
+            this.position.y + (amount * Math.cos(angle))
+        );
     }
 
-    Go(ammount: number) {
-        this.position = new Position(this.position.x + (ammount * Math.sin(this.view_direction * Math.PI / 180)), this.position.y + (ammount * Math.cos(this.view_direction * Math.PI / 180)));
+    Go(amount: number) {
+        const angle = this.view_direction * Math.PI / 180;
+        this.Move(angle, amount);
     }
 
-    GoSideWays(ammount: number) {
-        this.position = new Position(this.position.x + (ammount * Math.sin((this.view_direction + 90) % 360 * Math.PI / 180)), this.position.y + (ammount * Math.cos((this.view_direction + 90) % 360 * Math.PI / 180)));
+    GoSideWays(amount: number) {
+        const angle = (this.view_direction + 90) % 360 * Math.PI / 180
+        this.Move(angle, amount);
     }
-
 }
 
 
