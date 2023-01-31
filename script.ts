@@ -108,6 +108,14 @@ class Player {
         this.Go(-player.speed);
     }
 
+    public GoRight() {
+        this.GoSideWays(player.speed)
+    }
+
+    public GoLeft() {
+        this.GoSideWays(-player.speed)
+    }
+
     public NextPosition(direction: Direction): Position {
         let multiplier = 1;
         if (direction == Direction.Backwards) {
@@ -118,6 +126,10 @@ class Player {
 
     Go(ammount: number) {
         this.position = new Position(this.position.x + (ammount * Math.sin(this.view_direction * Math.PI / 180)), this.position.y + (ammount * Math.cos(this.view_direction * Math.PI / 180)));
+    }
+
+    GoSideWays(ammount: number) {
+        this.position = new Position(this.position.x + (ammount * Math.sin((this.view_direction + 90) % 360 * Math.PI / 180)), this.position.y + (ammount * Math.cos((this.view_direction + 90) % 360 * Math.PI / 180)));
     }
 
 }
@@ -196,7 +208,6 @@ function Setup() {
     body.AddSide(l2);
     body.AddSide(l3);
     body.AddSide(l4);
-    body.Draw();
     bodies.push(body);
 
     let divider = 50;
@@ -213,12 +224,14 @@ function Setup() {
         for (; j < GenerateRandomNumber(1, 4); j++) {
             lines.push(new Line(lines[j].endPoint, new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
         }
-        lines.push(new Line(lines[j].endPoint, lines[0].startPoint));
+        if (GenerateRandomNumber(0, 2) == 2) {
+            lines.push(new Line(lines[j].endPoint, lines[0].startPoint));
+        }
 
         lines.forEach(line => {
             body.AddSide(line)
         });
-        body.Draw();
+
         bodies.push(body);
     }
 
@@ -235,40 +248,64 @@ async function Main() {
 function GameLoop() {
     ClearCanvas();
     HandleKeys();
+    DrawGround();
     Scan(player);
-    bodies.forEach(body => {
-        body.Draw();
-    });
+    if (keyController.keys.get("m")) {
+        bodies.forEach(body => {
+            body.Draw();
+        });
+    }
 }
 
 async function Scan(player: Player) {
     let lineLengthMultiplier = 10000;
-    let centerCounter = canvasWidth;
+    let centerCounter = canvasWidth - (canvasWidth / (canvasWidth / viewAngle)) / 2;
     for (let i = -viewAngle / 2; i < viewAngle / 2; i++) {
         let distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
-        DrawRay(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier), red);
-        for (let j = 0; j < canvasWidth / viewAngle; j++) {
-            DrawSegment(distance, new Position(centerCounter + j, canvasHeight / 2));
+
+        DrawSegment(distance, new Position(centerCounter, canvasHeight / 2));
+        if (keyController.keys.get("m")) {
+            DrawRay(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier), green);
+            DrawDot(player.position, red, 2);
         }
-        centerCounter -= canvasWidth / (canvasWidth / viewAngle);
+
+        centerCounter -= (canvasWidth / (canvasWidth / viewAngle)) - 1;
     }
 }
 
 
 function DrawSegment(distance: number, center: Position) {
     ctx.beginPath();
-    let width: number = canvasWidth / viewAngle;
-    let distancePercent = (2000 / distance) * 10;
+    let width: number = (canvasWidth / viewAngle) + 2;
+    let distancePercent = (1500 / distance) * 15;
     let height: number = distancePercent;
     if (height > canvasHeight) {
         height = canvasHeight;
     }
-    ctx.lineWidth = 1;
-    let color = 255 - (255 * (1 - distancePercent / 100) * 2);
+
+    let color = 255 - (255 * (1 - distancePercent / 250));
 
     ctx.fillStyle = `rgb(${color},${color},${color},255)`;
     ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
     ctx.stroke();
+}
+
+function DrawRect(start: Position, width: number, height: number, color: Color) {
+    ctx.beginPath();
+    ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue}, 255)`;
+    ctx.fillRect(start.x, start.y, width, height);
+    ctx.stroke();
+}
+
+function DrawGround() {
+    let halfway = new Position(0, canvasHeight / 2);
+    let color = 0;
+    for (let i = 0; i < 6; i++) {
+        let color = 10 + 10 * i;
+        DrawRect(new Position(halfway.x, halfway.y), canvasWidth, canvasHeight, { Red: 50 + color, Green: 50 + color, Blue: color, Alpha: 255 });
+        halfway.y += canvasHeight / (25 - 5 * i)
+    }
+
 }
 
 function DrawDot(position: Position, color: Color, radius: number) {
@@ -312,9 +349,6 @@ function DrawRay(start: Position, end: Position, color: Color) {
     ctx.stroke();
 }
 
-
-
-
 function getDistanceForSegment(start: Position, end: Position): number {
     let startLine = new Line(start, end);
     let endPoint: Position = end;
@@ -351,11 +385,20 @@ function HandleKeys() {
         if (value) {
             switch (key) {
                 case "ArrowLeft":
-                    player.Turn(5);
+                    if (keyController.keys.get("s")) {
+                        player.GoRight();
+                    } else {
+                        player.Turn(5);
+                    }
                     break;
 
                 case "ArrowRight":
-                    player.Turn(-5);
+                    if (keyController.keys.get("s")) {
+                        player.GoLeft();
+
+                    } else {
+                        player.Turn(-5);
+                    }
                     break;
 
                 case "ArrowUp":
@@ -371,25 +414,29 @@ function HandleKeys() {
 }
 
 function KeyDownListener(e: KeyboardEvent, modificationType: boolean) {
-    if (e.shiftKey) {
-        keyController.keys.set("Shift", modificationType);
-    }
-
     switch (e.key) {
+        case "s":
+            keyController.keys.set(e.key, modificationType);
+            break;
+
+        case "m":
+            keyController.keys.set(e.key, modificationType);
+            break;
+
         case "ArrowLeft":
-            keyController.keys.set("ArrowLeft", modificationType);
+            keyController.keys.set(e.key, modificationType);
             break;
 
         case "ArrowRight":
-            keyController.keys.set("ArrowRight", modificationType);
+            keyController.keys.set(e.key, modificationType);
             break;
 
         case "ArrowUp":
-            keyController.keys.set("ArrowUp", modificationType);
+            keyController.keys.set(e.key, modificationType);
             break;
 
         case "ArrowDown":
-            keyController.keys.set("ArrowDown", modificationType);
+            keyController.keys.set(e.key, modificationType);
             break;
     }
 }
