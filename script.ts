@@ -209,6 +209,7 @@ class KeyPressController {
     public static getKey(key: string): boolean {
         return this.keys.get(key) ?? false;
     }
+
 }
 
 function GenerateRandomNumber(min: number, max: number): number {
@@ -291,16 +292,20 @@ function Setup() {
 Main();
 async function Main() {
     Setup();
+
     addEventListener("keydown", (e) => KeyPressController.Listen(e, true), false);
     addEventListener("keyup", (e) => KeyPressController.Listen(e, false), false);
+
     addEventListener("resize", (e) => WindowResizeListener(e), false);
 
     setInterval(() => {
         ClearCanvas();
+
         KeyPressController.HandleKeys();
         DrawGround();
         Scan(player);
         if (KeyPressController.getKey("m")) {
+
             bodies.forEach(body => {
                 body.Draw();
             });
@@ -309,6 +314,7 @@ async function Main() {
 }
 
 async function Scan(player: Player) {
+
     const lineLengthMultiplier = 10000;
     const iterating_number = 0.025;
 
@@ -330,10 +336,12 @@ async function Scan(player: Player) {
 
 function DrawSegment(distance: number, center: Position, modifier: number) {
     ctx.beginPath();
+
     const width: number = (canvasWidth / viewAngle * modifier)+1;
     const distancePercent = (1500 / distance) * 15;
     const height: number = Math.min(canvasHeight, distancePercent);
     const color = 255 - (255 * (1 - distancePercent / 250));
+
 
     ctx.fillStyle = `rgb(${color},${color},${color},255)`;
     ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
