@@ -419,29 +419,9 @@ function HandleKeys() {
 }
 
 function KeyDownListener(e: KeyboardEvent, modificationType: boolean) {
-    switch (e.key) {
-        case "s":
-            keyController.keys.set(e.key, modificationType);
-            break;
+    const keys: string[] = ["s", "m", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"] satisfies Array<KeyboardEvent["key"]>;
 
-        case "m":
-            keyController.keys.set(e.key, modificationType);
-            break;
-
-        case "ArrowLeft":
-            keyController.keys.set(e.key, modificationType);
-            break;
-
-        case "ArrowRight":
-            keyController.keys.set(e.key, modificationType);
-            break;
-
-        case "ArrowUp":
-            keyController.keys.set(e.key, modificationType);
-            break;
-
-        case "ArrowDown":
-            keyController.keys.set(e.key, modificationType);
-            break;
+    if (keys.includes(e.key)) {
+        keyController.keys.set(e.key, modificationType);
     }
 }
