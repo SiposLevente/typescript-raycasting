@@ -1,8 +1,16 @@
-type Color = {
-    Red: number,
-    Green: number,
-    Blue: number,
-    Alpha: number,
+class Color {
+    Red: number;
+    Green: number;
+    Blue: number;
+    Alpha: number;
+
+    constructor(red: number, green: number, blue: number, alpha: number) {
+        this.Red = red;
+        this.Green = green;
+        this.Blue = blue;
+        this.Alpha = alpha;
+
+    }
 }
 
 class Position {
@@ -284,19 +292,19 @@ async function Main() {
     Setup();
     addEventListener("keydown", (e) => KeyPressController.Listen(e, true), false);
     addEventListener("keyup", (e) => KeyPressController.Listen(e, false), false);
-    setInterval(GameLoop, 100);
-}
+    addEventListener("resize", (e) => WindowResizeListener(e), false);
 
-function GameLoop() {
-    ClearCanvas();
-    KeyPressController.HandleKeys();
-    DrawGround();
-    Scan(player);
-    if (KeyPressController.getKey("m")) {
-        bodies.forEach(body => {
-            body.Draw();
-        });
-    }
+    setInterval(() => {
+        ClearCanvas();
+        KeyPressController.HandleKeys();
+        DrawGround();
+        Scan(player);
+        if (KeyPressController.getKey("m")) {
+            bodies.forEach(body => {
+                body.Draw();
+            });
+        }
+    }, 100);
 }
 
 async function Scan(player: Player) {
@@ -304,8 +312,8 @@ async function Scan(player: Player) {
     const iterating_number = 0.025;
 
     let centerCounter = canvasWidth - (canvasWidth / (canvasWidth / viewAngle / iterating_number)) / 2;
-    for (let i = -viewAngle / 2; i < (viewAngle) / 2; i += iterating_number) {
-        const distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
+    for (let i = -viewAngle / 2 / (1080 / canvasWidth); i < (viewAngle) / 2 / (1080 / canvasWidth); i += iterating_number) {
+        let distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
 
         DrawSegment(distance, new Position(centerCounter, canvasHeight / 2), iterating_number);
 
@@ -407,4 +415,11 @@ function ClearCanvas() {
 
 function Sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function WindowResizeListener(e: UIEvent) {
+    canvas.width = screen.width;
+    canvas.height = screen.height;
+    canvasWidth = canvas.width;
+    canvasHeight = canvas.height;
 }
