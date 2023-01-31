@@ -227,9 +227,10 @@ const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>canvas.getContex
 canvas.height = window.innerHeight;
 canvas.width = window.innerWidth;
 
+let canvasWidth: number = canvas.width;
+let canvasHeight: number = canvas.height;
+
 const viewAngle = 45;
-const canvasWidth: number = canvas.width;
-const canvasHeight: number = canvas.height;
 const player: Player = new Player(canvasWidth / 2, canvasHeight / 2);
 const bodies: CanvasBody[] = [];
 
