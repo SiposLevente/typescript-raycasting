@@ -53,24 +53,35 @@ class Line {
     public Intersects(boundry: Line): Position | null {
         // this start x1 y1 -  end x2 y2
         // boundry x3 y3 -  end x4 y4
-        let t = ((this.startPoint.x - boundry.startPoint.x) * (boundry.startPoint.y - boundry.endPoint.y) - (this.startPoint.y - boundry.startPoint.y) * (boundry.startPoint.x - boundry.endPoint.x)) / ((this.startPoint.x - this.endPoint.x) * (boundry.startPoint.y - boundry.endPoint.y) - (this.startPoint.y - this.endPoint.y) * (boundry.startPoint.x - boundry.endPoint.x));
-        let u = ((this.startPoint.x - boundry.startPoint.x) * (this.startPoint.y - this.endPoint.y) - (this.startPoint.y - boundry.startPoint.y) * (this.startPoint.x - this.endPoint.x)) / ((this.startPoint.x - this.endPoint.x) * (boundry.startPoint.y - boundry.endPoint.y) - (this.startPoint.y - this.endPoint.y) * (boundry.startPoint.x - boundry.endPoint.x));
 
-        let pxTop: number = (this.startPoint.x * this.endPoint.y - this.startPoint.y * this.endPoint.x) * (boundry.startPoint.x - boundry.endPoint.x) - (this.startPoint.x - this.endPoint.x) * (boundry.startPoint.x * boundry.endPoint.y - boundry.startPoint.y * boundry.endPoint.x);
-        let pxBottom: number = (this.startPoint.x - this.endPoint.x) * (boundry.startPoint.y - boundry.endPoint.y) - (this.startPoint.y - this.endPoint.y) * (boundry.startPoint.x - boundry.endPoint.x);
-        let pyTop: number = (this.startPoint.x * this.endPoint.y - this.startPoint.y * this.endPoint.x) * (boundry.startPoint.y - boundry.endPoint.y) - (this.startPoint.y - this.endPoint.y) * (boundry.startPoint.x * boundry.endPoint.y - boundry.startPoint.y * boundry.endPoint.x);
-        let pyBottom: number = (this.startPoint.x - this.endPoint.x) * (boundry.startPoint.y - boundry.endPoint.y) - (this.startPoint.y - this.endPoint.y) * (boundry.startPoint.x - boundry.endPoint.x);
+        const lS = this.startPoint;
+        const lE = this.endPoint;
+        const bS = boundry.startPoint;
+        const bE = boundry.endPoint
 
-        if ((pxBottom == 0 || pyBottom == 0) || (t < 0 || t > 1) || ((u < 0 || u > 1))) {
+        const divisor = (lS.x - lE.x) * (bS.y - bE.y) - (lS.y - lE.y) * (bS.x - bE.x)
+
+        if (divisor == 0) {
             return null;
         }
 
-        return (
-            new Position(
-                pxTop / pxBottom,
-                pyTop / pyBottom
-            )
-        )
+        const lbSXDist = lS.x - bS.x;
+        const lbSYDist = lS.y - bS.y;
+
+        const t = (lbSXDist * (bS.y - bE.y) - lbSYDist * (bS.x - bE.x)) / divisor;
+        const u = (lbSXDist * (lS.y - lE.y) - lbSYDist * (lS.x - lE.x)) / divisor;
+
+        if ((t < 0 || t > 1) || ((u < 0 || u > 1))) {
+            return null;
+        }
+
+        const lMul = (lS.x * lE.y - lS.y * lE.x) 
+        const bMul = (bS.x * bE.y - bS.y * bE.x)
+
+        const pxTop: number = lMul * (bS.x - bE.x) - bMul * (lS.x - lE.x);
+        const pyTop: number = lMul * (bS.y - bE.y) - bMul * (lS.y - lE.y);
+
+        return new Position(pxTop / divisor, pyTop / divisor)
     }
 }
 
