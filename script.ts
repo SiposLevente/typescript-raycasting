@@ -14,10 +14,10 @@ class Color {
     }
 }
 
-class Position {
+class Point {
     constructor(public x: number, public y: number) { }
 
-    public Distance(otherPoint: Position): number {
+    public Distance(otherPoint: Point): number {
         return Math.sqrt(Math.pow((otherPoint.x - this.x), 2) + Math.pow(otherPoint.y - this.y, 2));
     }
 }
@@ -28,12 +28,12 @@ class CanvasBody {
     generateSides(xMin: number, xMax: number, yMin: number, yMax: number) {
         const lines: Line[] = [
             new Line(
-                new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)),
-                new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
+                new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)),
+                new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
 
         let j = 0;
         for (; j < GenerateRandomNumber(1, 8); j++) {
-            lines.push(new Line(lines[j].endPoint, new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
+            lines.push(new Line(lines[j].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
         }
 
         if (GenerateRandomNumber(0, 4) == 0) {
@@ -55,19 +55,19 @@ class CanvasBody {
 }
 
 class Line {
-    startPoint: Position;
-    endPoint: Position;
+    startPoint: Point;
+    endPoint: Point;
 
-    constructor(start: Position, end: Position) {
-        this.startPoint = new Position(start.x, start.y);
-        this.endPoint = new Position(end.x, end.y);
+    constructor(start: Point, end: Point) {
+        this.startPoint = new Point(start.x, start.y);
+        this.endPoint = new Point(end.x, end.y);
     }
 
     public Draw() {
         DrawLine(this.startPoint, this.endPoint, red);
     }
 
-    public Intersects(boundary: Line): Position | null {
+    public Intersects(boundary: Line): Point | null {
         // this start x1 y1 -  end x2 y2
         // boundry x3 y3 -  end x4 y4
 
@@ -98,7 +98,7 @@ class Line {
         const pxTop: number = lMul * (bS.x - bE.x) - bMul * (lS.x - lE.x);
         const pyTop: number = lMul * (bS.y - bE.y) - bMul * (lS.y - lE.y);
 
-        return new Position(pxTop / divisor, pyTop / divisor)
+        return new Point(pxTop / divisor, pyTop / divisor)
     }
 }
 
@@ -110,13 +110,13 @@ const enum Direction {
 }
 
 class Player {
-    position: Position;
+    position: Point;
     view_direction: number;
     speed: number;
     turn_speed: number;
 
     constructor(x: number, y: number) {
-        this.position = new Position(x, y);
+        this.position = new Point(x, y);
         this.speed = 10;
         this.turn_speed = 5;
         this.view_direction = 0;
@@ -147,7 +147,7 @@ class Player {
     }
 
     private Move(angle: number, amount: number) {
-        this.position = new Position(
+        this.position = new Point(
             this.position.x + (amount * Math.sin(angle)),
             this.position.y + (amount * Math.cos(angle))
         );
@@ -230,7 +230,6 @@ function Sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-
 // -------------------------------- Drawing --------------------------------
 
 async function DrawFrame(player: Player) {
@@ -238,12 +237,12 @@ async function DrawFrame(player: Player) {
     const lineLengthMultiplier = 10000;
     const iteratingNumber = 0.025;
     const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
-    const getPosition = (i: number) => { return new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier); }
+    const getPosition = (i: number) => { return new Point(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier); }
 
     let centerCounter = canvasWidth - segmentWidth / 2;
     for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
         let distance = getDistanceForSegment(player.position, getPosition(i))
-        DrawSegment(distance, new Position(centerCounter, canvasHeight / 2), iteratingNumber);
+        DrawSegment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber);
         centerCounter -= segmentWidth;
     }
 
@@ -255,7 +254,7 @@ async function DrawFrame(player: Player) {
     }
 }
 
-function DrawSegment(distance: number, center: Position, modifier: number) {
+function DrawSegment(distance: number, center: Point, modifier: number) {
     ctx.beginPath();
 
     const width: number = (canvasWidth / viewAngle * modifier) + 1;
@@ -266,10 +265,9 @@ function DrawSegment(distance: number, center: Position, modifier: number) {
     ctx.fillStyle = `rgb(${color},${color},${color},255)`;
     ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
     ctx.stroke();
-
 }
 
-function DrawRect(start: Position, width: number, height: number, color: Color) {
+function DrawRect(start: Point, width: number, height: number, color: Color) {
     ctx.beginPath();
     ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue}, 255)`;
     ctx.fillRect(start.x, start.y, width, height);
@@ -277,25 +275,24 @@ function DrawRect(start: Position, width: number, height: number, color: Color) 
 }
 
 function DrawGround() {
-    const halfway = new Position(0, canvasHeight / 2);
+    const halfway = new Point(0, canvasHeight / 2);
     const color = 0;
     const segments = 8;
     for (let i = 0; i < segments; i++) {
         const color = 10 + 10 * i;
-        DrawRect(new Position(halfway.x, halfway.y), canvasWidth, canvasHeight, { Red: 50 + color, Green: 50 + color, Blue: color, Alpha: 255 });
+        DrawRect(new Point(halfway.x, halfway.y), canvasWidth, canvasHeight, { Red: 50 + color, Green: 50 + color, Blue: color, Alpha: 255 });
         halfway.y += canvasHeight / (segments * segments - segments * i)
     }
-
 }
 
-function DrawDot(position: Position, color: Color, radius: number) {
+function DrawDot(position: Point, color: Color, radius: number) {
     ctx.beginPath();
     ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
     ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
     ctx.fill();
 }
 
-function DrawLine(start: Position, end: Position, color: Color) {
+function DrawLine(start: Point, end: Point, color: Color) {
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(end.x, end.y);
@@ -303,12 +300,12 @@ function DrawLine(start: Position, end: Position, color: Color) {
     ctx.stroke();
 }
 
-function DrawRay(start: Position, end: Position, color: Color) {
+function DrawRay(start: Point, end: Point, color: Color) {
     const rayEnd = getIntersectingPosition(start, end);
     DrawLine(start, rayEnd, color);
 }
 
-function getIntersectingPosition(start: Position, end: Position): Position {
+function getIntersectingPosition(start: Point, end: Point): Point {
     const line = new Line(start, end);
 
     let closestPoint = end;
@@ -332,7 +329,7 @@ function getIntersectingPosition(start: Position, end: Position): Position {
     return closestPoint;
 }
 
-function getDistanceForSegment(start: Position, end: Position): number {
+function getDistanceForSegment(start: Point, end: Point): number {
     const closestPoint = getIntersectingPosition(start, end);
 
     return start.Distance(closestPoint);
@@ -401,10 +398,10 @@ const bodies: CanvasBody[] = [];
 // -------------------------------- Game Logic --------------------------------
 
 function Setup() {
-    const l1 = new Line(new Position(0, 0), new Position(canvasWidth, 0));
-    const l2 = new Line(new Position(canvasWidth, 0), new Position(canvasWidth, canvasHeight));
-    const l3 = new Line(new Position(canvasWidth, canvasHeight), new Position(0, canvasHeight),);
-    const l4 = new Line(new Position(0, canvasHeight), new Position(0, 0));
+    const l1 = new Line(new Point(0, 0), new Point(canvasWidth, 0));
+    const l2 = new Line(new Point(canvasWidth, 0), new Point(canvasWidth, canvasHeight));
+    const l3 = new Line(new Point(canvasWidth, canvasHeight), new Point(0, canvasHeight),);
+    const l4 = new Line(new Point(0, canvasHeight), new Point(0, 0));
 
     const body = new CanvasBody([l1, l2, l3, l4]);
     bodies.push(body);
