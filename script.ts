@@ -25,19 +25,41 @@ class Point {
 class CanvasBody {
     constructor(public sides: Line[]) { }
 
-    generateSides(xMin: number, xMax: number, yMin: number, yMax: number) {
+    generateSides(xMin: number, xMax: number, yMin: number, yMax: number, allowIntersection: boolean = false) {
         const lines: Line[] = [
             new Line(
                 new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)),
                 new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
 
-        let j = 0;
-        for (; j < GenerateRandomNumber(1, 8); j++) {
-            lines.push(new Line(lines[j].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax))));
+        let i = 0;
+        const sides = GenerateRandomNumber(1, 16);
+        for (; i < sides; i++) {
+            let new_line = new Line(lines[i].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)));
+            if (!allowIntersection) {
+                if (i != 0) {
+                    let validLine = false;
+                    while (!validLine) {
+                        let invalidLine = false;
+                        for (let j = 0; j < lines.length - 1; j++) {
+                            if (new_line.Intersects(lines[j])) {
+                                invalidLine = true;
+                            }
+                        }
+                        if (invalidLine) {
+                            new_line = new Line(lines[i].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)));
+                        }
+                        else {
+                            validLine = true;
+                        }
+                    }
+                }
+            }
+
+            lines.push(new_line);
         }
 
-        if (GenerateRandomNumber(0, 4) == 0) {
-            lines.push(new Line(lines[j].endPoint, lines[0].startPoint));
+        if (GenerateRandomNumber(0, 6) == 0) {
+            lines.push(new Line(lines[i].endPoint, lines[0].startPoint));
         }
 
         this.sides = lines;
@@ -413,7 +435,7 @@ function Setup() {
     const xMax = canvasWidth - xMin;
     const yMax = canvasHeight - yMin;
 
-    for (let i = 0; i < GenerateRandomNumber(1, 4); i++) {
+    for (let i = 0; i < GenerateRandomNumber(1, 1); i++) {
         const body = new CanvasBody([])
         body.generateSides(xMin, xMax, yMin, yMax);
         bodies.push(body);
