@@ -373,11 +373,10 @@ class CanvasManager {
     static DrawGround() {
         const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
         const halfway = new Point(0, canvasHeight / 2);
-        const color = 0;
         const segments = 8;
         for (let i = 0; i < segments; i++) {
-            const color = 10 + 10 * i;
-            this.DrawRect(new Point(halfway.x, halfway.y), canvasWidth, canvasHeight, { Red: 50 + color, Green: 50 + color, Blue: color, Alpha: 255 });
+            const color = 10 + 6 * i;
+            this.DrawRect(new Point(halfway.x, halfway.y), canvasWidth, canvasHeight, { Red: color, Green: color, Blue: 0, Alpha: 255 });
             halfway.y += canvasHeight / (segments * segments - segments * i)
         }
     }
