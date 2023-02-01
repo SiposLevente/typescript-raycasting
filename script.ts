@@ -196,34 +196,19 @@ class KeyPressController {
     private constructor() { }
 
     public static HandleKeys() {
+        // FIXME: ArrowLeft => GoRight?
+        const keyBinds = new Map([
+            ["ArrowLeft",  () => {this.getKey("s") ? player.GoRight() : player.Turn(1)}],
+            ["ArrowRight", () => {this.getKey("s") ? player.GoLeft() : player.Turn(-1)}],
+            ["ArrowUp",    () => {player.Forward()}],
+            ["ArrowDown",  () => {player.Backwards()}],
+        ])
+
         this.keys.forEach((value, key) => {
-            if (value) {
-                switch (key) {
-                    case "ArrowLeft":
-                        if (this.keys.get("s")) {
-                            player.GoRight();
-                        } else {
-                            player.Turn(1);
-                        }
-                        break;
+            const bind = keyBinds.get(key);
 
-                    case "ArrowRight":
-                        if (this.keys.get("s")) {
-                            player.GoLeft();
-
-                        } else {
-                            player.Turn(-1);
-                        }
-                        break;
-
-                    case "ArrowUp":
-                        player.Forward();
-                        break;
-
-                    case "ArrowDown":
-                        player.Backwards();
-                        break;
-                }
+            if (bind && value) {
+                bind()
             }
         });
     }
