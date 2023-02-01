@@ -154,6 +154,32 @@ class Player {
         return this.view_direction % 360;
     }
 
+    public GetNextPosition(direction: Direction, delta: number): Point {
+        let nextPosition: Point;
+        let angle = this.view_direction * Math.PI / 180;
+
+        switch (direction) {
+            case Direction.Forward:
+                nextPosition = this.position.AddVector(angle, player.speed * delta)
+                break;
+
+            case Direction.Backwards:
+                nextPosition = this.position.AddVector(angle, -player.speed * delta)
+                break;
+
+            case Direction.Left:
+                angle = (this.view_direction + 90) % 360 * Math.PI / 180;
+                nextPosition = this.position.AddVector(angle, -player.speed * delta);
+                break;
+
+            case Direction.Right:
+                angle = (this.view_direction + 90) % 360 * Math.PI / 180;
+                nextPosition = this.position.AddVector(angle, player.speed * delta);
+                break;
+        }
+        return nextPosition;
+    }
+
     public Turn(degree: number) {
         const newAngle = (this.view_direction + degree * this.turn_speed) % 360;
         this.view_direction = (newAngle < 0) ? (360 + newAngle) : newAngle;
@@ -185,7 +211,7 @@ class Player {
     }
 
     private GoSideWays(amount: number) {
-        const angle = (this.view_direction + 90) % 360 * Math.PI / 180
+        const angle = (this.view_direction + 90) % 360 * Math.PI / 180;
         this.Move(angle, amount);
     }
 }
@@ -199,11 +225,49 @@ class KeyPressController {
     public static HandleKeys(delta: number) {
         let multiplier = this.getKey("s") ? 2 : 1;
 
+        const isMovementValid = (direction: Direction): boolean => {
+            let validMovement = true;
+            let movementVector = new Line(player.position, player.GetNextPosition(direction, delta * multiplier))
+            bodies.forEach(body => {
+                body.sides.forEach(side => {
+                    if (side.Intersects(movementVector) != null) {
+                        validMovement = false;
+                    }
+                });
+            });
+            return validMovement;
+        }
+
         const keyBinds = new Map([
-            ["ArrowLeft", () => { this.getKey("a") ? player.GoLeft(delta * multiplier) : player.Turn(-8 * delta * multiplier) }],
-            ["ArrowRight", () => { this.getKey("a") ? player.GoRight(delta * multiplier) : player.Turn(8 * delta * multiplier) }],
-            ["ArrowUp", () => { player.Forward(delta * multiplier) }],
-            ["ArrowDown", () => { player.Backwards(delta * multiplier) }],
+            ["ArrowLeft", () => {
+                if (this.getKey("a")) {
+                    if (isMovementValid(Direction.Left)) {
+                        player.GoLeft(delta * multiplier)
+                    }
+                } else {
+                    player.Turn(-8 * delta * multiplier)
+                }
+            }],
+            ["ArrowRight", () => {
+                if (this.getKey("a")) {
+                    if (isMovementValid(Direction.Right)) {
+                        player.GoRight(delta * multiplier)
+                    }
+                } else {
+                    player.Turn(8 * delta * multiplier)
+                }
+            }],
+            ["ArrowUp", () => {
+                if (isMovementValid(Direction.Forward)) {
+                    player.Forward(delta * multiplier)
+                }
+
+            }],
+            ["ArrowDown", () => {
+                if (isMovementValid(Direction.Backwards)) {
+                    player.Backwards(delta * multiplier)
+                }
+            }],
         ])
 
         this.keys.forEach((value, key) => {
@@ -216,7 +280,7 @@ class KeyPressController {
     }
 
     public static Listen(e: KeyboardEvent, modificationType: boolean) {
-        const keys: string[] = ["a", "s", "m", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+        const keys: string[] = ["a", "s", "t", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
 
         if (keys.includes(e.key)) {
             this.keys.set(e.key, modificationType);
@@ -280,7 +344,7 @@ class CanvasManager {
             centerCounter += segmentWidth;
         }
 
-        if (KeyPressController.getKey("m")) {
+        if (KeyPressController.getKey("t")) {
             for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
                 this.DrawRay(player.position, getPosition(i), green);
             }
@@ -452,7 +516,7 @@ async function Main() {
             KeyPressController.HandleKeys(elapsed / 1000);
             CanvasManager.DrawGround();
             CanvasManager.DrawFrame(player);
-            if (KeyPressController.getKey("m")) {
+            if (KeyPressController.getKey("t")) {
                 bodies.forEach(body => {
                     body.Draw();
                 });

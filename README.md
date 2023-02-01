@@ -6,7 +6,7 @@ Small raycasting application in your browser
 |:-:|:-:|
 | <kbd>Forward/Backwards arrow</kbd> | Move |
 | <kbd>Left/Right arrow</kbd> | Turn |
-| <kbd>m</kbd> | Show map |
+| <kbd>t</kbd> | Show map |
 | <kbd>a + Left/Right</kbd> | Strafing |
 | <kbd>s + Arrow keys</kbd> | Move quicker |
 | <kbd>F5</kbd> | Reload + Regenerate map |
