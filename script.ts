@@ -195,7 +195,6 @@ class KeyPressController {
     private constructor() { }
 
     public static HandleKeys() {
-        // FIXME: ArrowLeft => GoRight?
         const keyBinds = new Map([
             ["ArrowLeft",  () => {this.getKey("s") ? player.GoLeft() : player.Turn(-1)}],
             ["ArrowRight", () => {this.getKey("s") ? player.GoRight() : player.Turn(1)}],
@@ -270,11 +269,11 @@ class CanvasManager {
             return player.position.AddVector(angle, lineLengthMultiplier);
         }
 
-        let centerCounter = canvasWidth - segmentWidth / 2;
+        let centerCounter = segmentWidth / 2;
         for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
             let distance = this.getDistanceForSegment(player.position, getPosition(i))
             this.DrawSegment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber);
-            centerCounter -= segmentWidth;
+            centerCounter += segmentWidth;
         }
 
         if (KeyPressController.getKey("m")) {
