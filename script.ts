@@ -22,9 +22,7 @@ class Point {
     }
 
     public AddVector(angle: number, amount: number): Point {
-        // FIXME: For some reason the angle we look towards and where the player is facing, isn't the same.
-        //        Because of this, we use swap sin/cos. 
-        return new Point(this.x + amount * Math.sin(angle), this.y + amount * Math.cos(angle))
+        return new Point(this.x + amount * Math.cos(angle), this.y + amount * Math.sin(angle))
     }
 }
 
@@ -155,7 +153,8 @@ class Player {
     }
 
     public Turn(degree: number) {
-        this.view_direction = (this.view_direction + degree * this.turn_speed) % 360;
+        const newAngle = (this.view_direction + degree * this.turn_speed) % 360;
+        this.view_direction = (newAngle < 0) ? (360 + newAngle) : newAngle;
     }
 
     public Forward() {
@@ -198,8 +197,8 @@ class KeyPressController {
     public static HandleKeys() {
         // FIXME: ArrowLeft => GoRight?
         const keyBinds = new Map([
-            ["ArrowLeft",  () => {this.getKey("s") ? player.GoRight() : player.Turn(1)}],
-            ["ArrowRight", () => {this.getKey("s") ? player.GoLeft() : player.Turn(-1)}],
+            ["ArrowLeft",  () => {this.getKey("s") ? player.GoLeft() : player.Turn(-1)}],
+            ["ArrowRight", () => {this.getKey("s") ? player.GoRight() : player.Turn(1)}],
             ["ArrowUp",    () => {player.Forward()}],
             ["ArrowDown",  () => {player.Backwards()}],
         ])
