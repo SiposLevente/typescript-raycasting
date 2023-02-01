@@ -1,3 +1,4 @@
+// -------------------------------- Geometry Objects --------------------------------
 class Color {
     Red: number;
     Green: number;
@@ -101,6 +102,8 @@ class Line {
     }
 }
 
+// -------------------------------- Player Class --------------------------------
+
 const enum Direction {
     Forward,
     Backwards
@@ -110,11 +113,12 @@ class Player {
     position: Position;
     view_direction: number;
     speed: number;
-
+    turn_speed: number;
 
     constructor(x: number, y: number) {
         this.position = new Position(x, y);
         this.speed = 10;
+        this.turn_speed = 5;
         this.view_direction = 0;
     }
 
@@ -123,7 +127,7 @@ class Player {
     }
 
     public Turn(degree: number) {
-        this.view_direction = (this.view_direction + degree) % 360;
+        this.view_direction = (this.view_direction + degree * this.turn_speed) % 360;
     }
 
     public Forward() {
@@ -160,6 +164,7 @@ class Player {
     }
 }
 
+// -------------------------------- Keypress Controller Class --------------------------------
 
 class KeyPressController {
     private static keys: Map<string, boolean> = new Map();
@@ -173,7 +178,7 @@ class KeyPressController {
                         if (this.keys.get("s")) {
                             player.GoRight();
                         } else {
-                            player.Turn(5);
+                            player.Turn(1);
                         }
                         break;
 
@@ -182,7 +187,7 @@ class KeyPressController {
                             player.GoLeft();
 
                         } else {
-                            player.Turn(-5);
+                            player.Turn(-1);
                         }
                         break;
 
@@ -209,8 +214,9 @@ class KeyPressController {
     public static getKey(key: string): boolean {
         return this.keys.get(key) ?? false;
     }
-
 }
+
+// -------------------------------- Genric Functions --------------------------------
 
 function GenerateRandomNumber(min: number, max: number): number {
     if (max >= min) {
@@ -220,113 +226,30 @@ function GenerateRandomNumber(min: number, max: number): number {
     }
 }
 
-// -------------------------------------------------------
-
-const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
-const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>canvas.getContext("2d");
-
-canvas.height = window.innerHeight;
-canvas.width = window.innerWidth;
-
-let canvasWidth: number = canvas.width;
-let canvasHeight: number = canvas.height;
-
-const viewAngle = 45;
-const player: Player = new Player(canvasWidth / 2, canvasHeight / 2);
-const bodies: CanvasBody[] = [];
-
-const white: Color = {
-    Red: 255,
-    Green: 255,
-    Blue: 255,
-    Alpha: 255,
-}
-const black: Color = {
-    Red: 0,
-    Green: 0,
-    Blue: 0,
-    Alpha: 0,
-}
-const red: Color = {
-    Red: 255,
-    Green: 0,
-    Blue: 0,
-    Alpha: 255,
-}
-const green: Color = {
-    Red: 0,
-    Green: 255,
-    Blue: 0,
-    Alpha: 255,
-}
-const blue: Color = {
-    Red: 0,
-    Green: 0,
-    Blue: 255,
-    Alpha: 255,
+function Sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function Setup() {
-    const l1 = new Line(new Position(0, 0), new Position(canvasWidth, 0));
-    const l2 = new Line(new Position(canvasWidth, 0), new Position(canvasWidth, canvasHeight));
-    const l3 = new Line(new Position(canvasWidth, canvasHeight), new Position(0, canvasHeight),);
-    const l4 = new Line(new Position(0, canvasHeight), new Position(0, 0));
 
-    const body = new CanvasBody([l1, l2, l3, l4]);
-    bodies.push(body);
-
-    const divider = 50;
-    const xMin = canvasWidth / divider;
-    const yMin = canvasHeight / divider;
-
-    const xMax = canvasWidth - xMin;
-    const yMax = canvasHeight - yMin;
-
-    for (let i = 0; i < GenerateRandomNumber(1, 3); i++) {
-        const body = new CanvasBody([])
-        body.generateSides(xMin, xMax, yMin, yMax);
-        bodies.push(body);
-    }
-}
-
-Main();
-async function Main() {
-    Setup();
-
-    addEventListener("keydown", (e) => KeyPressController.Listen(e, true), false);
-    addEventListener("keyup", (e) => KeyPressController.Listen(e, false), false);
-
-    addEventListener("resize", (e) => WindowResizeListener(e), false);
-
-    setInterval(() => {
-        ClearCanvas();
-        KeyPressController.HandleKeys();
-        DrawGround();
-        DrawFrame(player);
-        if (KeyPressController.getKey("m")) {
-            bodies.forEach(body => {
-                body.Draw();
-            });
-        }
-    }, 100);
-}
+// -------------------------------- Drawing --------------------------------
 
 async function DrawFrame(player: Player) {
 
     const lineLengthMultiplier = 10000;
-    const iterating_number = 0.025;
+    const iteratingNumber = 0.025;
+    const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
+    const getPosition = (i: number) => { return new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier); }
 
-    let centerCounter = canvasWidth - (canvasWidth / (canvasWidth / viewAngle / iterating_number)) / 2;
-    for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iterating_number) {
-        let distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
-
-        DrawSegment(distance, new Position(centerCounter, canvasHeight / 2), iterating_number);
-
-        centerCounter -= (canvasWidth / (canvasWidth / viewAngle / iterating_number));
+    let centerCounter = canvasWidth - segmentWidth / 2;
+    for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
+        let distance = getDistanceForSegment(player.position, getPosition(i))
+        DrawSegment(distance, new Position(centerCounter, canvasHeight / 2), iteratingNumber);
+        centerCounter -= segmentWidth;
     }
+
     if (KeyPressController.getKey("m")) {
-        for (let i = -viewAngle / 2; i < viewAngle / 2; i += iterating_number) {
-            DrawRay(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier), green);
+        for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
+            DrawRay(player.position, getPosition(i), green);
             DrawDot(player.position, red, 2);
         }
     }
@@ -340,10 +263,10 @@ function DrawSegment(distance: number, center: Position, modifier: number) {
     const height: number = Math.min(canvasHeight, distancePercent);
     const color = 255 - (255 * (1 - distancePercent / 250));
 
-
     ctx.fillStyle = `rgb(${color},${color},${color},255)`;
     ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
     ctx.stroke();
+
 }
 
 function DrawRect(start: Position, width: number, height: number, color: Color) {
@@ -420,9 +343,7 @@ function ClearCanvas() {
 }
 
 
-function Sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+// -------------------------------- Event Handling --------------------------------
 
 function WindowResizeListener(e: UIEvent) {
     canvas.width = screen.width;
@@ -430,3 +351,96 @@ function WindowResizeListener(e: UIEvent) {
     canvasWidth = canvas.width;
     canvasHeight = canvas.height;
 }
+
+// -------------------------------- Global Variables --------------------------------
+
+const white: Color = {
+    Red: 255,
+    Green: 255,
+    Blue: 255,
+    Alpha: 255,
+}
+const black: Color = {
+    Red: 0,
+    Green: 0,
+    Blue: 0,
+    Alpha: 0,
+}
+const red: Color = {
+    Red: 255,
+    Green: 0,
+    Blue: 0,
+    Alpha: 255,
+}
+const green: Color = {
+    Red: 0,
+    Green: 255,
+    Blue: 0,
+    Alpha: 255,
+}
+const blue: Color = {
+    Red: 0,
+    Green: 0,
+    Blue: 255,
+    Alpha: 255,
+}
+
+const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
+const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>canvas.getContext("2d");
+
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+
+let canvasWidth: number = canvas.width;
+let canvasHeight: number = canvas.height;
+
+const viewAngle = 45;
+const player: Player = new Player(canvasWidth / 2, canvasHeight / 2);
+const bodies: CanvasBody[] = [];
+
+// -------------------------------- Game Logic --------------------------------
+
+function Setup() {
+    const l1 = new Line(new Position(0, 0), new Position(canvasWidth, 0));
+    const l2 = new Line(new Position(canvasWidth, 0), new Position(canvasWidth, canvasHeight));
+    const l3 = new Line(new Position(canvasWidth, canvasHeight), new Position(0, canvasHeight),);
+    const l4 = new Line(new Position(0, canvasHeight), new Position(0, 0));
+
+    const body = new CanvasBody([l1, l2, l3, l4]);
+    bodies.push(body);
+
+    const divider = 50;
+    const xMin = canvasWidth / divider;
+    const yMin = canvasHeight / divider;
+
+    const xMax = canvasWidth - xMin;
+    const yMax = canvasHeight - yMin;
+
+    for (let i = 0; i < GenerateRandomNumber(1, 4); i++) {
+        const body = new CanvasBody([])
+        body.generateSides(xMin, xMax, yMin, yMax);
+        bodies.push(body);
+    }
+}
+
+async function Main() {
+    Setup();
+
+    addEventListener("keydown", (e) => KeyPressController.Listen(e, true), false);
+    addEventListener("keyup", (e) => KeyPressController.Listen(e, false), false);
+    addEventListener("resize", (e) => WindowResizeListener(e), false);
+
+    setInterval(() => {
+        ClearCanvas();
+        KeyPressController.HandleKeys();
+        DrawGround();
+        DrawFrame(player);
+        if (KeyPressController.getKey("m")) {
+            bodies.forEach(body => {
+                body.Draw();
+            });
+        }
+    }, 100);
+}
+
+Main();
