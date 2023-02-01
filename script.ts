@@ -145,7 +145,7 @@ class Player {
 
     constructor(x: number, y: number) {
         this.position = new Point(x, y);
-        this.speed = 5;
+        this.speed = 300;
         this.turn_speed = 5;
         this.view_direction = 0;
     }
@@ -159,20 +159,20 @@ class Player {
         this.view_direction = (newAngle < 0) ? (360 + newAngle) : newAngle;
     }
 
-    public Forward() {
-        this.Go(player.speed);
+    public Forward(delta: number) {
+        this.Go(player.speed * delta);
     }
 
-    public Backwards() {
-        this.Go(-player.speed);
+    public Backwards(delta: number) {
+        this.Go(-player.speed * delta);
     }
 
-    public GoRight() {
-        this.GoSideWays(player.speed)
+    public GoRight(delta: number) {
+        this.GoSideWays(player.speed * delta)
     }
 
-    public GoLeft() {
-        this.GoSideWays(-player.speed)
+    public GoLeft(delta: number) {
+        this.GoSideWays(-player.speed * delta)
     }
 
     private Move(angle: number, amount: number) {
@@ -196,12 +196,12 @@ class KeyPressController {
     private static keys: Map<string, boolean> = new Map();
     private constructor() { }
 
-    public static HandleKeys() {
+    public static HandleKeys(delta: number) {
         const keyBinds = new Map([
-            ["ArrowLeft",  () => {this.getKey("s") ? player.GoLeft() : player.Turn(-1)}],
-            ["ArrowRight", () => {this.getKey("s") ? player.GoRight() : player.Turn(1)}],
-            ["ArrowUp",    () => {player.Forward()}],
-            ["ArrowDown",  () => {player.Backwards()}],
+            ["ArrowLeft",  () => {this.getKey("s") ? player.GoLeft(delta) : player.Turn(-8 * delta)}],
+            ["ArrowRight", () => {this.getKey("s") ? player.GoRight(delta) : player.Turn(8 * delta)}],
+            ["ArrowUp",    () => {player.Forward(delta)}],
+            ["ArrowDown",  () => {player.Backwards(delta)}],
         ])
 
         this.keys.forEach((value, key) => {
@@ -434,17 +434,32 @@ async function Main() {
     addEventListener("keyup", (e) => KeyPressController.Listen(e, false), false);
     addEventListener("resize", (e) => CanvasManager.onResize(e), false);
 
-    setInterval(() => {
-        CanvasManager.ClearCanvas();
-        KeyPressController.HandleKeys();
-        CanvasManager.DrawGround();
-        CanvasManager.DrawFrame(player);
-        if (KeyPressController.getKey("m")) {
-            bodies.forEach(body => {
-                body.Draw();
-            });
+    let lastTime = 0;
+    let requiredElapsed = 1000 / 60; // 60 FPS
+
+    requestAnimationFrame(loop);
+
+    function loop(now: number) {
+        requestAnimationFrame(loop);
+        
+        if (!lastTime) { lastTime = now; }
+        const elapsed = now - lastTime;
+
+        if (elapsed > requiredElapsed) {
+            CanvasManager.ClearCanvas();
+            KeyPressController.HandleKeys(elapsed / 1000);
+            CanvasManager.DrawGround();
+            CanvasManager.DrawFrame(player);
+            if (KeyPressController.getKey("m")) {
+                bodies.forEach(body => {
+                    body.Draw();
+                });
+            }
+
+            lastTime = now;
         }
-    }, 100);
+    }
+
+    loop(0)
 }
 
-Main();
