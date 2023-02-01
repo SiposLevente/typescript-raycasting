@@ -20,6 +20,12 @@ class Point {
     public Distance(otherPoint: Point): number {
         return Math.sqrt(Math.pow((otherPoint.x - this.x), 2) + Math.pow(otherPoint.y - this.y, 2));
     }
+
+    public AddVector(angle: number, amount: number): Point {
+        // FIXME: For some reason the angle we look towards and where the player is facing, isn't the same.
+        //        Because of this, we use swap sin/cos. 
+        return new Point(this.x + amount * Math.sin(angle), this.y + amount * Math.cos(angle))
+    }
 }
 
 class CanvasBody {
@@ -169,10 +175,7 @@ class Player {
     }
 
     private Move(angle: number, amount: number) {
-        this.position = new Point(
-            this.position.x + (amount * Math.sin(angle)),
-            this.position.y + (amount * Math.cos(angle))
-        );
+        this.position = this.position.AddVector(angle, amount);
     }
 
     private Go(amount: number) {
@@ -262,7 +265,7 @@ async function DrawFrame(player: Player) {
 
     const getPosition = (i: number) => { 
         const angle = (i + player.view_direction) * Math.PI / 180
-        return new Point(player.position.x + Math.sin(angle) * lineLengthMultiplier, player.position.y + Math.cos(angle) * lineLengthMultiplier); 
+        return player.position.AddVector(angle, lineLengthMultiplier);
     }
 
     let centerCounter = canvasWidth - segmentWidth / 2;
@@ -275,8 +278,9 @@ async function DrawFrame(player: Player) {
     if (KeyPressController.getKey("m")) {
         for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
             DrawRay(player.position, getPosition(i), green);
-            DrawDot(player.position, red, 2);
         }
+
+        DrawDot(player.position, red, 2);
     }
 }
 
