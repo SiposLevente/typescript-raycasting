@@ -14,7 +14,7 @@ class Color {
 }
 
 class Position {
-    constructor(public x: number, public y: number) {}
+    constructor(public x: number, public y: number) { }
 
     public Distance(otherPoint: Position): number {
         return Math.sqrt(Math.pow((otherPoint.x - this.x), 2) + Math.pow(otherPoint.y - this.y, 2));
@@ -22,12 +22,12 @@ class Position {
 }
 
 class CanvasBody {
-    constructor(public sides: Line[]) {}
+    constructor(public sides: Line[]) { }
 
     generateSides(xMin: number, xMax: number, yMin: number, yMax: number) {
         const lines: Line[] = [
             new Line(
-                new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)), 
+                new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)),
                 new Position(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
 
         let j = 0;
@@ -91,7 +91,7 @@ class Line {
             return null;
         }
 
-        const lMul = (lS.x * lE.y - lS.y * lE.x) 
+        const lMul = (lS.x * lE.y - lS.y * lE.x)
         const bMul = (bS.x * bE.y - bS.y * bE.x)
 
         const pxTop: number = lMul * (bS.x - bE.x) - bMul * (lS.x - lE.x);
@@ -144,7 +144,7 @@ class Player {
 
     private Move(angle: number, amount: number) {
         this.position = new Position(
-            this.position.x + (amount * Math.sin(angle)), 
+            this.position.x + (amount * Math.sin(angle)),
             this.position.y + (amount * Math.cos(angle))
         );
     }
@@ -163,7 +163,7 @@ class Player {
 
 class KeyPressController {
     private static keys: Map<string, boolean> = new Map();
-    private constructor() {}
+    private constructor() { }
 
     public static HandleKeys() {
         this.keys.forEach((value, key) => {
@@ -300,12 +300,10 @@ async function Main() {
 
     setInterval(() => {
         ClearCanvas();
-
         KeyPressController.HandleKeys();
         DrawGround();
-        Scan(player);
+        DrawFrame(player);
         if (KeyPressController.getKey("m")) {
-
             bodies.forEach(body => {
                 body.Draw();
             });
@@ -313,13 +311,13 @@ async function Main() {
     }, 100);
 }
 
-async function Scan(player: Player) {
+async function DrawFrame(player: Player) {
 
     const lineLengthMultiplier = 10000;
     const iterating_number = 0.025;
 
     let centerCounter = canvasWidth - (canvasWidth / (canvasWidth / viewAngle / iterating_number)) / 2;
-    for (let i = -viewAngle / 2 / (1080 / canvasWidth); i < (viewAngle) / 2 / (1080 / canvasWidth); i += iterating_number) {
+    for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iterating_number) {
         let distance = getDistanceForSegment(player.position, new Position(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier))
 
         DrawSegment(distance, new Position(centerCounter, canvasHeight / 2), iterating_number);
@@ -337,7 +335,7 @@ async function Scan(player: Player) {
 function DrawSegment(distance: number, center: Position, modifier: number) {
     ctx.beginPath();
 
-    const width: number = (canvasWidth / viewAngle * modifier)+1;
+    const width: number = (canvasWidth / viewAngle * modifier) + 1;
     const distancePercent = (1500 / distance) * 15;
     const height: number = Math.min(canvasHeight, distancePercent);
     const color = 255 - (255 * (1 - distancePercent / 250));
