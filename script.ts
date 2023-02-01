@@ -128,7 +128,9 @@ class Line {
 
 const enum Direction {
     Forward,
-    Backwards
+    Backwards,
+    Left,
+    Right
 }
 
 class Player {
@@ -139,7 +141,7 @@ class Player {
 
     constructor(x: number, y: number) {
         this.position = new Point(x, y);
-        this.speed = 10;
+        this.speed = 5;
         this.turn_speed = 5;
         this.view_direction = 0;
     }
