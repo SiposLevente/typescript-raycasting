@@ -32,7 +32,7 @@ class CanvasBody {
                 new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)))]
 
         let i = 0;
-        const sides = GenerateRandomNumber(1, 64);
+        const sides = GenerateRandomNumber(1, 32);
         for (; i < sides; i++) {
             let new_line = new Line(lines[i].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)));
             if (!allowIntersection) {
