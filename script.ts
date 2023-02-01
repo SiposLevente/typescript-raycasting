@@ -304,7 +304,6 @@ class CanvasManager {
 
     static DrawSegment(distance: number, center: Point, modifier: number) {
         const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
-        this.ctx.beginPath();
 
         const width: number = (canvasWidth / viewAngle * modifier) + 1;
         const distancePercent = (1500 / distance) * 15;
@@ -313,14 +312,11 @@ class CanvasManager {
 
         this.ctx.fillStyle = `rgb(${color},${color},${color},255)`;
         this.ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
-        this.ctx.stroke();
     }
 
     static DrawRect(start: Point, width: number, height: number, color: Color) {
-        this.ctx.beginPath();
-        this.ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue}, 255)`;
+        this.setColor(color);
         this.ctx.fillRect(start.x, start.y, width, height);
-        this.ctx.stroke();
     }
 
     static DrawGround() {
@@ -337,7 +333,7 @@ class CanvasManager {
 
     static DrawDot(position: Point, color: Color, radius: number) {
         this.ctx.beginPath();
-        this.ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
+        this.setColorAlpha(color);
         this.ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
         this.ctx.fill();
     }
@@ -346,7 +342,7 @@ class CanvasManager {
         this.ctx.beginPath();
         this.ctx.moveTo(start.x, start.y);
         this.ctx.lineTo(end.x, end.y);
-        this.ctx.strokeStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
+        this.setColorAlpha(color);
         this.ctx.stroke();
     }
 
@@ -394,15 +390,25 @@ class CanvasManager {
         this.canvas.width = screen.width;
         this.canvas.height = screen.height;
     }
+
+    private static setColor(color: Color) {
+        this.ctx.strokeStyle = `rgb(${color.Red},${color.Green},${color.Blue},255)`;
+        this.ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue},255)`;
+    };
+
+    private static setColorAlpha(color: Color) {
+        this.ctx.strokeStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
+        this.ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
+    };
 }
 
 // -------------------------------- Global Variables --------------------------------
 
 const white: Color = new Color(255, 255, 255, 255);
-const black: Color = new Color(0, 0, 0, 255);
-const red: Color   = new Color(255, 0, 0, 255);
-const green: Color = new Color(0, 255, 0, 255);
-const blue: Color  = new Color(0, 0, 255, 255);
+const black: Color = new Color(  0,   0,   0, 255);
+const red:   Color = new Color(255,   0,   0, 255);
+const green: Color = new Color(  0, 255,   0, 255);
+const blue:  Color = new Color(  0,   0, 255, 255);
 
 CanvasManager.Setup(<HTMLCanvasElement>document.getElementById("myCanvas"))
 
