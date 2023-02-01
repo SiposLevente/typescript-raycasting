@@ -197,10 +197,7 @@ class KeyPressController {
     private constructor() { }
 
     public static HandleKeys(delta: number) {
-        let multiplier = 1;
-        if (this.getKey("s")) {
-            multiplier = 2;
-        }
+        let multiplier = this.getKey("s") ? 2 : 1;
 
         const keyBinds = new Map([
             ["ArrowLeft", () => { this.getKey("a") ? player.GoLeft(delta * multiplier) : player.Turn(-8 * delta * multiplier) }],
