@@ -359,7 +359,7 @@ class CanvasManager {
         const width: number = (canvasWidth / viewAngle * modifier) + 1;
         const distancePercent = (1500 / distance) * 15;
         const height: number = Math.min(canvasHeight, distancePercent);
-        const color = 255 - (255 * (1 - distancePercent / 250));
+        const color = 255 - (255 * (1 - distancePercent / 500));
 
         this.ctx.fillStyle = `rgb(${color},${color},${color},255)`;
         this.ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
