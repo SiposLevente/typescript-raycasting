@@ -4,9 +4,12 @@ Small raycasting application in your browser
 ## Controlls
 | Button | Action |
 |:-:|:-:|
-| <kbd>Arrow keys</kbd> | Move |
+| <kbd>Forward/Backwards arrow</kbd> | Move |
+| <kbd>Left/Right arrow</kbd> | Turn |
 | <kbd>m</kbd> | Show map |
-| <kbd>s + Left/Right</kbd> | Strafing |
+| <kbd>a + Left/Right</kbd> | Strafing |
+| <kbd>s + Arrow keys</kbd> | Move quicker |
+| <kbd>F5</kbd> | Reload + Regenerate map |
 
 
 ## Images

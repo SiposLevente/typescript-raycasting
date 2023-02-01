@@ -197,11 +197,16 @@ class KeyPressController {
     private constructor() { }
 
     public static HandleKeys(delta: number) {
+        let multiplier = 1;
+        if (this.getKey("s")) {
+            multiplier = 2;
+        }
+
         const keyBinds = new Map([
-            ["ArrowLeft", () => { this.getKey("s") ? player.GoLeft(delta) : player.Turn(-8 * delta) }],
-            ["ArrowRight", () => { this.getKey("s") ? player.GoRight(delta) : player.Turn(8 * delta) }],
-            ["ArrowUp", () => { player.Forward(delta) }],
-            ["ArrowDown", () => { player.Backwards(delta) }],
+            ["ArrowLeft", () => { this.getKey("a") ? player.GoLeft(delta * multiplier) : player.Turn(-8 * delta * multiplier) }],
+            ["ArrowRight", () => { this.getKey("a") ? player.GoRight(delta * multiplier) : player.Turn(8 * delta * multiplier) }],
+            ["ArrowUp", () => { player.Forward(delta * multiplier) }],
+            ["ArrowDown", () => { player.Backwards(delta * multiplier) }],
         ])
 
         this.keys.forEach((value, key) => {
@@ -214,7 +219,7 @@ class KeyPressController {
     }
 
     public static Listen(e: KeyboardEvent, modificationType: boolean) {
-        const keys: string[] = ["s", "m", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+        const keys: string[] = ["a", "s", "m", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
 
         if (keys.includes(e.key)) {
             this.keys.set(e.key, modificationType);
