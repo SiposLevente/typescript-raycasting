@@ -145,7 +145,7 @@ class Player {
 
     constructor(x: number, y: number) {
         this.position = new Point(x, y);
-        this.speed = 300;
+        this.speed = 100;
         this.turn_speed = 5;
         this.view_direction = 0;
     }
@@ -198,10 +198,10 @@ class KeyPressController {
 
     public static HandleKeys(delta: number) {
         const keyBinds = new Map([
-            ["ArrowLeft",  () => {this.getKey("s") ? player.GoLeft(delta) : player.Turn(-8 * delta)}],
-            ["ArrowRight", () => {this.getKey("s") ? player.GoRight(delta) : player.Turn(8 * delta)}],
-            ["ArrowUp",    () => {player.Forward(delta)}],
-            ["ArrowDown",  () => {player.Backwards(delta)}],
+            ["ArrowLeft", () => { this.getKey("s") ? player.GoLeft(delta) : player.Turn(-8 * delta) }],
+            ["ArrowRight", () => { this.getKey("s") ? player.GoRight(delta) : player.Turn(8 * delta) }],
+            ["ArrowUp", () => { player.Forward(delta) }],
+            ["ArrowDown", () => { player.Backwards(delta) }],
         ])
 
         this.keys.forEach((value, key) => {
@@ -246,7 +246,7 @@ class CanvasManager {
     private static canvas: HTMLCanvasElement;
     private static ctx: CanvasRenderingContext2D;
 
-    private constructor() {};
+    private constructor() { };
 
     public static Setup(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -266,14 +266,14 @@ class CanvasManager {
         const iteratingNumber = 0.025;
         const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
 
-        const getPosition = (i: number) => { 
+        const getPosition = (i: number) => {
             const angle = (i + player.view_direction) * Math.PI / 180
             return player.position.AddVector(angle, lineLengthMultiplier);
         }
 
         let centerCounter = segmentWidth / 2;
         for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
-            let distance = this.getDistanceForSegment(player.position, getPosition(i))
+            let distance = this.getDistanceForSegment(player.position, getPosition(i)) * Math.cos(i * Math.PI / 180);
             this.DrawSegment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber);
             centerCounter += segmentWidth;
         }
@@ -390,10 +390,10 @@ class CanvasManager {
 // -------------------------------- Global Variables --------------------------------
 
 const white: Color = new Color(255, 255, 255, 255);
-const black: Color = new Color(  0,   0,   0, 255);
-const red:   Color = new Color(255,   0,   0, 255);
-const green: Color = new Color(  0, 255,   0, 255);
-const blue:  Color = new Color(  0,   0, 255, 255);
+const black: Color = new Color(0, 0, 0, 255);
+const red: Color = new Color(255, 0, 0, 255);
+const green: Color = new Color(0, 255, 0, 255);
+const blue: Color = new Color(0, 0, 255, 255);
 
 CanvasManager.Setup(<HTMLCanvasElement>document.getElementById("myCanvas"))
 
@@ -441,7 +441,7 @@ async function Main() {
 
     function loop(now: number) {
         requestAnimationFrame(loop);
-        
+
         if (!lastTime) { lastTime = now; }
         const elapsed = now - lastTime;
 
