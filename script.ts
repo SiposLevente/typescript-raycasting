@@ -259,7 +259,11 @@ async function DrawFrame(player: Player) {
     const lineLengthMultiplier = 10000;
     const iteratingNumber = 0.025;
     const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
-    const getPosition = (i: number) => { return new Point(player.position.x + Math.sin((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier, player.position.y + Math.cos((i + player.view_direction) * Math.PI / 180) * lineLengthMultiplier); }
+
+    const getPosition = (i: number) => { 
+        const angle = (i + player.view_direction) * Math.PI / 180
+        return new Point(player.position.x + Math.sin(angle) * lineLengthMultiplier, player.position.y + Math.cos(angle) * lineLengthMultiplier); 
+    }
 
     let centerCounter = canvasWidth - segmentWidth / 2;
     for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
@@ -373,36 +377,11 @@ function WindowResizeListener(e: UIEvent) {
 
 // -------------------------------- Global Variables --------------------------------
 
-const white: Color = {
-    Red: 255,
-    Green: 255,
-    Blue: 255,
-    Alpha: 255,
-}
-const black: Color = {
-    Red: 0,
-    Green: 0,
-    Blue: 0,
-    Alpha: 0,
-}
-const red: Color = {
-    Red: 255,
-    Green: 0,
-    Blue: 0,
-    Alpha: 255,
-}
-const green: Color = {
-    Red: 0,
-    Green: 255,
-    Blue: 0,
-    Alpha: 255,
-}
-const blue: Color = {
-    Red: 0,
-    Green: 0,
-    Blue: 255,
-    Alpha: 255,
-}
+const white: Color = new Color(255, 255, 255, 255);
+const black: Color = new Color(0, 0, 0, 255);
+const red: Color   = new Color(255, 0, 0, 255);
+const green: Color = new Color(0, 255, 0, 255);
+const blue: Color  = new Color(0, 0, 255, 255);
 
 const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("myCanvas");
 const ctx: CanvasRenderingContext2D = <CanvasRenderingContext2D>canvas.getContext("2d");
@@ -420,10 +399,11 @@ const bodies: CanvasBody[] = [];
 // -------------------------------- Game Logic --------------------------------
 
 function Setup() {
-    const l1 = new Line(new Point(0, 0), new Point(canvasWidth, 0));
-    const l2 = new Line(new Point(canvasWidth, 0), new Point(canvasWidth, canvasHeight));
-    const l3 = new Line(new Point(canvasWidth, canvasHeight), new Point(0, canvasHeight),);
-    const l4 = new Line(new Point(0, canvasHeight), new Point(0, 0));
+    const [w, h] = [canvasWidth, canvasHeight];
+    const l1 = new Line(new Point(0, 0), new Point(w, 0));
+    const l2 = new Line(new Point(w, 0), new Point(w, h));
+    const l3 = new Line(new Point(w, h), new Point(0, h));
+    const l4 = new Line(new Point(0, h), new Point(0, 0));
 
     const body = new CanvasBody([l1, l2, l3, l4]);
     bodies.push(body);
