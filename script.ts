@@ -186,9 +186,7 @@ class Player {
     }
 
     public SetPosition(newPosition: Point) {
-
         player.position = newPosition;
-
     }
 
     public Forward(delta: number) {
@@ -237,9 +235,9 @@ class KeyPressController {
             let body_counter = 0;
             let side_counter = 0;
             let invalid_movement = false;
-            while (body_counter <= bodies.length -1 && !invalid_movement) {
+            while (body_counter <= bodies.length - 1 && !invalid_movement) {
                 side_counter = 0;
-                while (side_counter <= bodies[body_counter].sides.length-1 && !invalid_movement) {
+                while (side_counter <= bodies[body_counter].sides.length - 1 && !invalid_movement) {
                     if (bodies[body_counter].sides[side_counter].Intersects(movementVector) != null) {
                         nextPosition = player.position;
                         invalid_movement = true;
@@ -437,7 +435,6 @@ class CanvasManager {
 
     static getDistanceForSegment(start: Point, end: Point): number {
         const closestPoint = this.getIntersectingPosition(start, end);
-
         return start.Distance(closestPoint);
     }
 
