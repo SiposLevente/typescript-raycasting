@@ -156,28 +156,43 @@ class Player {
 
     public GetNextPosition(direction: Direction, delta: number): Point {
         let nextPosition: Point;
-        let angle = this.view_direction * Math.PI / 180;
 
         switch (direction) {
             case Direction.Forward:
-                nextPosition = this.position.AddVector(angle, player.speed * delta)
+                nextPosition = this.Go(delta, Direction.Forward);
                 break;
 
             case Direction.Backwards:
-                nextPosition = this.position.AddVector(angle, -player.speed * delta)
+                nextPosition = this.Go(delta, Direction.Backwards);
                 break;
 
             case Direction.Left:
-                angle = (this.view_direction + 90) % 360 * Math.PI / 180;
-                nextPosition = this.position.AddVector(angle, -player.speed * delta);
+                nextPosition = this.GoSideWays(delta, Direction.Left);
                 break;
 
             case Direction.Right:
-                angle = (this.view_direction + 90) % 360 * Math.PI / 180;
-                nextPosition = this.position.AddVector(angle, player.speed * delta);
+                nextPosition = this.GoSideWays(delta, Direction.Right);
                 break;
         }
         return nextPosition;
+    }
+
+    public Go(delta: number, direction: Direction.Forward | Direction.Backwards): Point {
+        let angle = this.view_direction * Math.PI / 180;
+        let multiplier = 1;
+        if (direction == Direction.Backwards) {
+            multiplier = -1
+        }
+        return this.position.AddVector(angle, multiplier * player.speed * delta)
+    }
+
+    public GoSideWays(delta: number, direction: Direction.Left | Direction.Right): Point {
+        let angle = (this.view_direction + 90) % 360 * Math.PI / 180;
+        let multiplier = 1;
+        if (direction == Direction.Left) {
+            multiplier = -1
+        }
+        return this.position.AddVector(angle, multiplier * player.speed * delta);
     }
 
     public Turn(degree: number) {
@@ -189,35 +204,35 @@ class Player {
         player.position = newPosition;
     }
 
-    public Forward(delta: number) {
-        this.Go(player.speed * delta);
-    }
+    // public Forward(delta: number) {
+    //     this.Go(player.speed * delta);
+    // }
 
-    public Backwards(delta: number) {
-        this.Go(-player.speed * delta);
-    }
+    // public Backwards(delta: number) {
+    //     this.Go(-player.speed * delta);
+    // }
 
-    public GoRight(delta: number) {
-        this.GoSideWays(player.speed * delta)
-    }
+    // public GoRight(delta: number) {
+    //     this.GoSideWays(player.speed * delta)
+    // }
 
-    public GoLeft(delta: number) {
-        this.GoSideWays(-player.speed * delta)
-    }
+    // public GoLeft(delta: number) {
+    //     this.GoSideWays(-player.speed * delta)
+    // }
 
-    private Move(angle: number, amount: number) {
-        this.position = this.position.AddVector(angle, amount);
-    }
+    // private Move(angle: number, amount: number) {
+    //     this.position = this.position.AddVector(angle, amount);
+    // }
 
-    private Go(amount: number) {
-        const angle = this.view_direction * Math.PI / 180;
-        this.Move(angle, amount);
-    }
+    // private Go(amount: number) {
+    //     const angle = this.view_direction * Math.PI / 180;
+    //     this.Move(angle, amount);
+    // }
 
-    private GoSideWays(amount: number) {
-        const angle = (this.view_direction + 90) % 360 * Math.PI / 180;
-        this.Move(angle, amount);
-    }
+    // private GoSideWays(amount: number) {
+    //     const angle = (this.view_direction + 90) % 360 * Math.PI / 180;
+    //     this.Move(angle, amount);
+    // }
 }
 
 // -------------------------------- Keypress Controller Class --------------------------------
