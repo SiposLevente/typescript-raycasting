@@ -185,6 +185,12 @@ class Player {
         this.view_direction = (newAngle < 0) ? (360 + newAngle) : newAngle;
     }
 
+    public SetPosition(newPosition: Point) {
+
+        player.position = newPosition;
+
+    }
+
     public Forward(delta: number) {
         this.Go(player.speed * delta);
     }
@@ -225,48 +231,52 @@ class KeyPressController {
     public static HandleKeys(delta: number) {
         let multiplier = this.getKey("s") ? 2 : 1;
 
-        const isMovementValid = (direction: Direction): boolean => {
-            let validMovement = true;
-            let movementVector = new Line(player.position, player.GetNextPosition(direction, delta * multiplier))
-            bodies.forEach(body => {
-                body.sides.forEach(side => {
-                    if (side.Intersects(movementVector) != null) {
-                        validMovement = false;
+        const ifValidMove = (direction: Direction) => {
+            let nextPosition: Point = player.GetNextPosition(direction, delta * multiplier);
+            let movementVector = new Line(player.position, nextPosition)
+            let body_counter = 0;
+            let side_counter = 0;
+            let invalid_movement = false;
+            while (body_counter <= bodies.length -1 && !invalid_movement) {
+                side_counter = 0;
+                while (side_counter <= bodies[body_counter].sides.length-1 && !invalid_movement) {
+                    if (bodies[body_counter].sides[side_counter].Intersects(movementVector) != null) {
+                        nextPosition = player.position;
+                        invalid_movement = true;
                     }
-                });
-            });
-            return validMovement;
+                    side_counter++;
+                }
+                body_counter++;
+            }
+
+            console.log(body_counter + " " + side_counter);
+            if (!invalid_movement) {
+                player.SetPosition(nextPosition);
+            }
         }
 
         const keyBinds = new Map([
             ["ArrowLeft", () => {
                 if (this.getKey("a")) {
-                    if (isMovementValid(Direction.Left)) {
-                        player.GoLeft(delta * multiplier)
-                    }
+                    ifValidMove(Direction.Left);
                 } else {
                     player.Turn(-8 * delta * multiplier)
                 }
             }],
             ["ArrowRight", () => {
                 if (this.getKey("a")) {
-                    if (isMovementValid(Direction.Right)) {
-                        player.GoRight(delta * multiplier)
-                    }
+                    ifValidMove(Direction.Right);
                 } else {
                     player.Turn(8 * delta * multiplier)
                 }
             }],
             ["ArrowUp", () => {
-                if (isMovementValid(Direction.Forward)) {
-                    player.Forward(delta * multiplier)
-                }
+                ifValidMove(Direction.Forward);
+
 
             }],
             ["ArrowDown", () => {
-                if (isMovementValid(Direction.Backwards)) {
-                    player.Backwards(delta * multiplier)
-                }
+                ifValidMove(Direction.Backwards);
             }],
         ])
 
@@ -329,7 +339,7 @@ class CanvasManager {
         const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
 
         const lineLengthMultiplier = 10000;
-        const iteratingNumber = 0.025;
+        const iteratingNumber = 0.1;
         const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
 
         const getPosition = (i: number) => {
