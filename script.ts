@@ -38,19 +38,19 @@ class CanvasBody {
         let i = 0;
         const sides = GenerateRandomNumber(1, 32);
         for (; i < sides; i++) {
-            let new_line = new Line(lines[i].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)));
+            let newLine = new Line(lines[i].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)));
             if (!allowIntersection) {
                 if (i != 0) {
                     let validLine = false;
                     while (!validLine) {
                         let invalidLine = false;
                         for (let j = 0; j < lines.length - 1; j++) {
-                            if (new_line.Intersects(lines[j])) {
+                            if (newLine.Intersects(lines[j])) {
                                 invalidLine = true;
                             }
                         }
                         if (invalidLine) {
-                            new_line = new Line(lines[i].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)));
+                            newLine = new Line(lines[i].endPoint, new Point(GenerateRandomNumber(xMin, xMax), GenerateRandomNumber(yMin, yMax)));
                         }
                         else {
                             validLine = true;
@@ -59,7 +59,7 @@ class CanvasBody {
                 }
             }
 
-            lines.push(new_line);
+            lines.push(newLine);
         }
 
         if (GenerateRandomNumber(0, 10) == 0) {
@@ -139,19 +139,19 @@ const enum Direction {
 
 class Player {
     position: Point;
-    view_direction: number;
+    viewDirection: number;
     speed: number;
-    turn_speed: number;
+    turnSpeed: number;
 
     constructor(x: number, y: number) {
         this.position = new Point(x, y);
         this.speed = 100;
-        this.turn_speed = 5;
-        this.view_direction = 0;
+        this.turnSpeed = 5;
+        this.viewDirection = 0;
     }
 
     public GetViewDirection(): number {
-        return this.view_direction % 360;
+        return this.viewDirection % 360;
     }
 
     public GetNextPosition(direction: Direction, delta: number): Point {
@@ -178,7 +178,7 @@ class Player {
     }
 
     public Go(delta: number, direction: Direction.Forward | Direction.Backwards): Point {
-        let angle = this.view_direction * Math.PI / 180;
+        let angle = this.viewDirection * Math.PI / 180;
         let multiplier = 1;
         if (direction == Direction.Backwards) {
             multiplier = -1
@@ -187,7 +187,7 @@ class Player {
     }
 
     public GoSideWays(delta: number, direction: Direction.Left | Direction.Right): Point {
-        let angle = (this.view_direction + 90) % 360 * Math.PI / 180;
+        let angle = (this.viewDirection + 90) % 360 * Math.PI / 180;
         let multiplier = 1;
         if (direction == Direction.Left) {
             multiplier = -1
@@ -196,8 +196,8 @@ class Player {
     }
 
     public Turn(degree: number) {
-        const newAngle = (this.view_direction + degree * this.turn_speed) % 360;
-        this.view_direction = (newAngle < 0) ? (360 + newAngle) : newAngle;
+        const newAngle = (this.viewDirection + degree * this.turnSpeed) % 360;
+        this.viewDirection = (newAngle < 0) ? (360 + newAngle) : newAngle;
     }
 
     public SetPosition(newPosition: Point) {
@@ -247,23 +247,23 @@ class KeyPressController {
         const ifValidMove = (direction: Direction) => {
             let nextPosition: Point = player.GetNextPosition(direction, delta * multiplier);
             let movementVector = new Line(player.position, nextPosition)
-            let body_counter = 0;
-            let side_counter = 0;
-            let invalid_movement = false;
-            while (body_counter <= bodies.length - 1 && !invalid_movement) {
-                side_counter = 0;
-                while (side_counter <= bodies[body_counter].sides.length - 1 && !invalid_movement) {
-                    if (bodies[body_counter].sides[side_counter].Intersects(movementVector) != null) {
+            let bodyCounter = 0;
+            let sideCounter = 0;
+            let invalidMovement = false;
+            while (bodyCounter <= bodies.length - 1 && !invalidMovement) {
+                sideCounter = 0;
+                while (sideCounter <= bodies[bodyCounter].sides.length - 1 && !invalidMovement) {
+                    if (bodies[bodyCounter].sides[sideCounter].Intersects(movementVector) != null) {
                         nextPosition = player.position;
-                        invalid_movement = true;
+                        invalidMovement = true;
                     }
-                    side_counter++;
+                    sideCounter++;
                 }
-                body_counter++;
+                bodyCounter++;
             }
 
-            console.log(body_counter + " " + side_counter);
-            if (!invalid_movement) {
+            console.log(bodyCounter + " " + sideCounter);
+            if (!invalidMovement) {
                 player.SetPosition(nextPosition);
             }
         }
@@ -325,10 +325,6 @@ function GenerateRandomNumber(min: number, max: number): number {
     }
 }
 
-function Sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 // -------------------------------- Drawing --------------------------------
 
 class CanvasManager {
@@ -348,15 +344,15 @@ class CanvasManager {
     public static GetWidth() { return this.canvas.width; }
     public static GetHeight() { return this.canvas.height; }
 
-    static async DrawFrame(player: Player) {
+    static DrawFrame(player: Player) {
         const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
 
         const lineLengthMultiplier = 10000;
-        const iteratingNumber = 0.1;
+        const iteratingNumber = 0.01;
         const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
 
         const getPosition = (i: number) => {
-            const angle = (i + player.view_direction) * Math.PI / 180
+            const angle = (i + player.viewDirection) * Math.PI / 180
             return player.position.AddVector(angle, lineLengthMultiplier);
         }
 
@@ -514,7 +510,7 @@ function Setup() {
     }
 }
 
-async function Main() {
+function Main() {
     Setup();
 
     addEventListener("keydown", (e) => KeyPressController.Listen(e, true), false);
