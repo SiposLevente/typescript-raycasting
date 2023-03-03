@@ -327,6 +327,18 @@ function GenerateRandomNumber(min: number, max: number): number {
 
 // -------------------------------- Drawing --------------------------------
 
+class Segment {
+    distance: number;
+    position: Point;
+    modifier: number;
+
+    constructor(distance: number, position: Point, iterating_num: number) {
+        this.distance = distance;
+        this.position = position;
+        this.modifier = iterating_num;
+    }
+}
+
 class CanvasManager {
     private static canvas: HTMLCanvasElement;
     private static ctx: CanvasRenderingContext2D;
@@ -357,11 +369,23 @@ class CanvasManager {
         }
 
         let centerCounter = segmentWidth / 2;
+        // for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
+        //     let distance = this.getDistanceForSegment(player.position, getPosition(i)) * Math.cos(i * Math.PI / 180);
+        //     this.DrawSegment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber);
+        //     centerCounter += segmentWidth;
+        // }
+
+        let segmentArray: Segment[] = [];
         for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
             let distance = this.getDistanceForSegment(player.position, getPosition(i)) * Math.cos(i * Math.PI / 180);
-            this.DrawSegment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber);
+            segmentArray.push(new Segment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber))
             centerCounter += segmentWidth;
         }
+
+        segmentArray.sort((x, y) => y.distance - x.distance).forEach(segment => {
+            this.DrawSegment(segment)
+        });
+
 
         if (KeyPressController.getKey("t")) {
             for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
@@ -372,32 +396,21 @@ class CanvasManager {
         }
     }
 
-    static DrawSegment(distance: number, center: Point, modifier: number) {
+    static DrawSegment(segment: Segment) {
         const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
 
-        const width: number = (canvasWidth / viewAngle * modifier) + 1;
-        const distancePercent = (1500 / distance) * 15;
+        const width: number = (canvasWidth / viewAngle * segment.modifier) + 1;
+        const distancePercent = (1500 / segment.distance) * 15;
         const height: number = Math.min(canvasHeight, distancePercent);
         const color = 255 - (255 * (1 - distancePercent / 500));
 
         this.ctx.fillStyle = `rgb(${color},${color},${color},255)`;
-        this.ctx.fillRect(center.x - width / 2, center.y - height / 2, width, height);
+        this.ctx.fillRect(segment.position.x - width / 2, segment.position.y - height / 2, width, height);
     }
 
     static DrawRect(start: Point, width: number, height: number, color: Color) {
         this.setColor(color);
         this.ctx.fillRect(start.x, start.y, width, height);
-    }
-
-    static DrawGround() {
-        const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
-        const halfway = new Point(0, canvasHeight / 2);
-        const segments = 8;
-        for (let i = 0; i < segments; i++) {
-            const color = 10 + 6 * i;
-            this.DrawRect(new Point(halfway.x, halfway.y), canvasWidth, canvasHeight, { Red: color, Green: color, Blue: 0, Alpha: 255 });
-            halfway.y += canvasHeight / (segments * segments - segments * i)
-        }
     }
 
     static DrawDot(position: Point, color: Color, radius: number) {
@@ -478,7 +491,7 @@ const red: Color = new Color(255, 0, 0, 255);
 const green: Color = new Color(0, 255, 0, 255);
 const blue: Color = new Color(0, 0, 255, 255);
 
-CanvasManager.Setup(<HTMLCanvasElement>document.getElementById("myCanvas"))
+CanvasManager.Setup(<HTMLCanvasElement>document.getElementById("wallCanvas"))
 
 const viewAngle = 45;
 const player: Player = new Player(CanvasManager.GetWidth() / 2, CanvasManager.GetHeight() / 2);
@@ -531,7 +544,6 @@ function Main() {
         if (elapsed > requiredElapsed) {
             CanvasManager.ClearCanvas();
             KeyPressController.HandleKeys(elapsed / 1000);
-            CanvasManager.DrawGround();
             CanvasManager.DrawFrame(player);
             if (KeyPressController.getKey("t")) {
                 bodies.forEach(body => {
