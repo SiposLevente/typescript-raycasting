@@ -270,7 +270,6 @@ class KeyPressController {
                 bodyCounter++;
             }
 
-            console.log(bodyCounter + " " + sideCounter);
             if (!invalidMovement) {
                 player.SetPosition(nextPosition);
             }
