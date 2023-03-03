@@ -409,7 +409,7 @@ class CanvasManager {
     }
 
     static DrawPlayerArrow(player: Player) {
-        let line_length = 19;
+        let line_length = 3;
         const rotatePoint = (point: Point) => {
             const player_rotation_x = -Math.sin(ConvertDegreeToRadian(player.GetViewDirection()))
             const player_rotation_y = Math.cos(ConvertDegreeToRadian(player.GetViewDirection()))
