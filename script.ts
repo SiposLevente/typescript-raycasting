@@ -304,6 +304,7 @@ class KeyPressController {
             const bind = keyBinds.get(key);
 
             if (bind && value) {
+                CanvasManager.isRefreshNeeded = true;
                 bind()
             }
         });
@@ -353,6 +354,7 @@ class Segment {
 class CanvasManager {
     private static canvas: HTMLCanvasElement;
     private static ctx: CanvasRenderingContext2D;
+    public static isRefreshNeeded: boolean;
 
     private constructor() { };
 
@@ -360,6 +362,7 @@ class CanvasManager {
         this.canvas = canvas;
         this.canvas.height = window.innerHeight;
         this.canvas.width = window.innerWidth;
+        this.isRefreshNeeded = true;
 
         this.ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
     }
@@ -368,42 +371,48 @@ class CanvasManager {
     public static GetHeight() { return this.canvas.height; }
 
     static DrawFrame(player: Player) {
-        const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
+        if (this.isRefreshNeeded) {
+            this.ClearCanvas();
 
-        const lineLengthMultiplier = 10000;
-        const iteratingNumber = 0.01;
-        const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
+            const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
 
-        const getPosition = (i: number) => {
-            const angle = ConvertDegreeToRadian(i + player.viewDirection);
-            return player.position.AddVector(angle, lineLengthMultiplier);
-        }
+            const lineLengthMultiplier = 10000;
+            const iteratingNumber = 0.01;
+            const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
 
-        let centerCounter = segmentWidth / 2;
-        let segmentArray: Segment[] = [];
-        for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
-            let distance = this.getDistanceForSegment(player.position, getPosition(i)) * Math.cos(ConvertDegreeToRadian(i));
-            segmentArray.push(new Segment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber))
-            centerCounter += segmentWidth;
-        }
+            const getPosition = (i: number) => {
+                const angle = ConvertDegreeToRadian(i + player.viewDirection);
+                return player.position.AddVector(angle, lineLengthMultiplier);
+            }
 
-        segmentArray.sort((x, y) => y.distance - x.distance).forEach(segment => {
-            this.DrawSegment(segment)
-        });
+            let centerCounter = segmentWidth / 2;
+            let segmentArray: Segment[] = [];
+            for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
+                let distance = this.getDistanceForSegment(player.position, getPosition(i)) * Math.cos(ConvertDegreeToRadian(i));
+                segmentArray.push(new Segment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber))
+                centerCounter += segmentWidth;
+            }
 
+            segmentArray.sort((x, y) => y.distance - x.distance).forEach(segment => {
+                this.DrawSegment(segment)
+            });
 
-        if (KeyPressController.getKey(showMapKey)) {
-            // for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
-            //     this.DrawRay(player.position, getPosition(i), green);
-            // }
-
-            this.DrawPlayerArrow(player);
 
             if (KeyPressController.getKey(showMapKey)) {
-                bodies.forEach(body => {
-                    body.Draw();
-                });
+                // for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
+                //     this.DrawRay(player.position, getPosition(i), green);
+                // }
+
+                this.DrawPlayerArrow(player);
+
+                if (KeyPressController.getKey(showMapKey)) {
+                    bodies.forEach(body => {
+                        body.Draw();
+                    });
+                }
             }
+            console.log("redrawn")
+            this.isRefreshNeeded = false;
         }
     }
 
@@ -420,9 +429,9 @@ class CanvasManager {
         const line_start_position = rotatePoint(new Point(player.position.x - line_length, player.position.y));
         const line_end_position = rotatePoint(new Point(player.position.x + line_length, player.position.y));
 
-        const arrow_head_left = rotatePoint(new Point(player.position.x + line_length/2, player.position.y + line_length/2))
-        const arrow_head_right = rotatePoint(new Point(player.position.x + line_length/2, player.position.y - line_length/2))
-        
+        const arrow_head_left = rotatePoint(new Point(player.position.x + line_length / 2, player.position.y + line_length / 2))
+        const arrow_head_right = rotatePoint(new Point(player.position.x + line_length / 2, player.position.y - line_length / 2))
+
         this.DrawLine(line_start_position, line_end_position, red);
         this.DrawLine(arrow_head_left, line_end_position, red);
         this.DrawLine(arrow_head_right, line_end_position, red);
@@ -502,6 +511,7 @@ class CanvasManager {
     static onResize(e: UIEvent) {
         this.canvas.width = screen.width;
         this.canvas.height = screen.height;
+        this.isRefreshNeeded = true;
     }
 
     private static setColor(color: Color) {
@@ -574,7 +584,7 @@ function Main() {
         const elapsed = now - lastTime;
 
         if (elapsed > requiredElapsed) {
-            CanvasManager.ClearCanvas();
+            //CanvasManager.ClearCanvas();
             KeyPressController.HandleKeys(elapsed / 1000);
             CanvasManager.DrawFrame(player);
 
