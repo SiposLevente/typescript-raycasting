@@ -178,7 +178,7 @@ class Player {
     }
 
     public Go(delta: number, direction: Direction.Forward | Direction.Backwards): Point {
-        let angle = this.viewDirection * Math.PI / 180;
+        let angle = ConvertDegreeToRadian(this.viewDirection);
         let multiplier = 1;
         if (direction == Direction.Backwards) {
             multiplier = -1
@@ -187,7 +187,7 @@ class Player {
     }
 
     public GoSideWays(delta: number, direction: Direction.Left | Direction.Right): Point {
-        let angle = (this.viewDirection + 90) % 360 * Math.PI / 180;
+        let angle = ConvertDegreeToRadian((this.viewDirection + 90) % 360);
         let multiplier = 1;
         if (direction == Direction.Left) {
             multiplier = -1
@@ -237,12 +237,20 @@ class Player {
 
 // -------------------------------- Keypress Controller Class --------------------------------
 
+const sprintKey = "s";
+const strafeKey = "a";
+const turnLeftKey = "ArrowLeft";
+const turnRightKey = "ArrowRight";
+const goForwardKey = "ArrowUp";
+const goBackwardsKey = "ArrowDown";
+const showMapKey = "t";
+
 class KeyPressController {
     private static keys: Map<string, boolean> = new Map();
     private constructor() { }
 
     public static HandleKeys(delta: number) {
-        let multiplier = this.getKey("s") ? 2 : 1;
+        let multiplier = this.getKey(sprintKey) ? 2 : 1;
 
         const ifValidMove = (direction: Direction) => {
             let nextPosition: Point = player.GetNextPosition(direction, delta * multiplier);
@@ -269,26 +277,26 @@ class KeyPressController {
         }
 
         const keyBinds = new Map([
-            ["ArrowLeft", () => {
-                if (this.getKey("a")) {
+            [turnLeftKey, () => {
+                if (this.getKey(strafeKey)) {
                     ifValidMove(Direction.Left);
                 } else {
                     player.Turn(-8 * delta * multiplier)
                 }
             }],
-            ["ArrowRight", () => {
-                if (this.getKey("a")) {
+            [turnRightKey, () => {
+                if (this.getKey(strafeKey)) {
                     ifValidMove(Direction.Right);
                 } else {
                     player.Turn(8 * delta * multiplier)
                 }
             }],
-            ["ArrowUp", () => {
+            [goForwardKey, () => {
                 ifValidMove(Direction.Forward);
 
 
             }],
-            ["ArrowDown", () => {
+            [goBackwardsKey, () => {
                 ifValidMove(Direction.Backwards);
             }],
         ])
@@ -303,7 +311,7 @@ class KeyPressController {
     }
 
     public static Listen(e: KeyboardEvent, modificationType: boolean) {
-        const keys: string[] = ["a", "s", "t", "ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+        const keys: string[] = [strafeKey, sprintKey, showMapKey, turnLeftKey, turnRightKey, goForwardKey, goBackwardsKey];
 
         if (keys.includes(e.key)) {
             this.keys.set(e.key, modificationType);
@@ -323,6 +331,10 @@ function GenerateRandomNumber(min: number, max: number): number {
     } else {
         throw new RangeError("ERROR! Minimum number must be smaller or equal to maximum number!");
     }
+}
+
+function ConvertDegreeToRadian(degree: number): number {
+    return degree * Math.PI / 180;
 }
 
 // -------------------------------- Drawing --------------------------------
@@ -364,20 +376,14 @@ class CanvasManager {
         const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
 
         const getPosition = (i: number) => {
-            const angle = (i + player.viewDirection) * Math.PI / 180
+            const angle = ConvertDegreeToRadian(i + player.viewDirection);
             return player.position.AddVector(angle, lineLengthMultiplier);
         }
 
         let centerCounter = segmentWidth / 2;
-        // for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
-        //     let distance = this.getDistanceForSegment(player.position, getPosition(i)) * Math.cos(i * Math.PI / 180);
-        //     this.DrawSegment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber);
-        //     centerCounter += segmentWidth;
-        // }
-
         let segmentArray: Segment[] = [];
         for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
-            let distance = this.getDistanceForSegment(player.position, getPosition(i)) * Math.cos(i * Math.PI / 180);
+            let distance = this.getDistanceForSegment(player.position, getPosition(i)) * Math.cos(ConvertDegreeToRadian(i));
             segmentArray.push(new Segment(distance, new Point(centerCounter, canvasHeight / 2), iteratingNumber))
             centerCounter += segmentWidth;
         }
@@ -387,13 +393,40 @@ class CanvasManager {
         });
 
 
-        if (KeyPressController.getKey("t")) {
-            for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
-                this.DrawRay(player.position, getPosition(i), green);
-            }
+        if (KeyPressController.getKey(showMapKey)) {
+            // for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
+            //     this.DrawRay(player.position, getPosition(i), green);
+            // }
 
-            this.DrawDot(player.position, red, 2);
+            this.DrawPlayerArrow(player);
+
+            if (KeyPressController.getKey(showMapKey)) {
+                bodies.forEach(body => {
+                    body.Draw();
+                });
+            }
         }
+    }
+
+    static DrawPlayerArrow(player: Player) {
+        let line_length = 19;
+        const rotatePoint = (point: Point) => {
+            const player_rotation_x = -Math.sin(ConvertDegreeToRadian(player.GetViewDirection()))
+            const player_rotation_y = Math.cos(ConvertDegreeToRadian(player.GetViewDirection()))
+            let nx = (player_rotation_y * (point.x - player.position.x)) + (player_rotation_x * (point.y - player.position.y)) + player.position.x;
+            let ny = (player_rotation_y * (point.y - player.position.y)) - (player_rotation_x * (point.x - player.position.x)) + player.position.y;
+            return new Point(nx, ny);
+        }
+
+        const line_start_position = rotatePoint(new Point(player.position.x - line_length, player.position.y));
+        const line_end_position = rotatePoint(new Point(player.position.x + line_length, player.position.y));
+
+        const arrow_head_left = rotatePoint(new Point(player.position.x + line_length/2, player.position.y + line_length/2))
+        const arrow_head_right = rotatePoint(new Point(player.position.x + line_length/2, player.position.y - line_length/2))
+        
+        this.DrawLine(line_start_position, line_end_position, red);
+        this.DrawLine(arrow_head_left, line_end_position, red);
+        this.DrawLine(arrow_head_right, line_end_position, red);
     }
 
     static DrawSegment(segment: Segment) {
@@ -545,11 +578,7 @@ function Main() {
             CanvasManager.ClearCanvas();
             KeyPressController.HandleKeys(elapsed / 1000);
             CanvasManager.DrawFrame(player);
-            if (KeyPressController.getKey("t")) {
-                bodies.forEach(body => {
-                    body.Draw();
-                });
-            }
+
 
             lastTime = now;
         }
