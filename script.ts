@@ -410,7 +410,7 @@ class CanvasManager {
             const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
 
             const lineLengthMultiplier = 10000;
-            const iteratingNumber = 0.01;
+            const iteratingNumber = 0.08;
             const segmentWidth = canvasWidth / viewAngle * iteratingNumber;
 
             const getPosition = (i: number) => {
