@@ -73,9 +73,9 @@ class CanvasBody {
         this.sides.push(line);
     }
 
-    public Draw() {
+    public Draw(canvas: CanvasManager) {
         this.sides.forEach(line => {
-            line.Draw();
+            line.Draw(canvas);
         });
     }
 }
@@ -89,8 +89,8 @@ class Line {
         this.endPoint = new Point(end.x, end.y);
     }
 
-    public Draw() {
-        CanvasManager.DrawLine(this.startPoint, this.endPoint, red);
+    public Draw(canvas: CanvasManager) {
+        canvas.DrawLine(this.startPoint, this.endPoint, red);
     }
 
     public Intersects(boundary: Line): Point | null {
@@ -127,6 +127,21 @@ class Line {
         return new Point(pxTop / divisor, pyTop / divisor)
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // -------------------------------- Player Class --------------------------------
 
@@ -205,6 +220,22 @@ class Player {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // -------------------------------- Keypress Controller Class --------------------------------
 
 const sprintKey = "s";
@@ -268,13 +299,16 @@ class KeyPressController {
             [goBackwardsKey, () => {
                 ifValidMove(Direction.Backwards);
             }],
+            [showMapKey, () => {
+            }],
         ])
 
         this.keys.forEach((value, key) => {
             const bind = keyBinds.get(key);
 
             if (bind && value) {
-                CanvasManager.isRefreshNeeded = true;
+                wallCanvas.isRefreshNeeded = true;
+                mapCanvas.isRefreshNeeded = true;
                 bind()
             }
         });
@@ -293,6 +327,22 @@ class KeyPressController {
     }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // -------------------------------- Genric Functions --------------------------------
 
 function GenerateRandomNumber(min: number, max: number): number {
@@ -306,6 +356,21 @@ function GenerateRandomNumber(min: number, max: number): number {
 function ConvertDegreeToRadian(degree: number): number {
     return degree * Math.PI / 180;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // -------------------------------- Drawing --------------------------------
 
@@ -322,13 +387,11 @@ class Segment {
 }
 
 class CanvasManager {
-    private static canvas: HTMLCanvasElement;
-    private static ctx: CanvasRenderingContext2D;
-    public static isRefreshNeeded: boolean;
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    public isRefreshNeeded: boolean;
 
-    private constructor() { };
-
-    public static Setup(canvas: HTMLCanvasElement) {
+    public constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.canvas.height = window.innerHeight;
         this.canvas.width = window.innerWidth;
@@ -337,10 +400,10 @@ class CanvasManager {
         this.ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
     }
 
-    public static GetWidth() { return this.canvas.width; }
-    public static GetHeight() { return this.canvas.height; }
+    public GetWidth() { return this.canvas.width; }
+    public GetHeight() { return this.canvas.height; }
 
-    static DrawFrame(player: Player) {
+    DrawFrame(player: Player) {
         if (this.isRefreshNeeded) {
             this.ClearCanvas();
 
@@ -368,24 +431,31 @@ class CanvasManager {
             });
 
 
-            if (KeyPressController.getKey(showMapKey)) {
-                // for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
-                //     this.DrawRay(player.position, getPosition(i), green);
-                // }
 
-                this.DrawPlayerArrow(player);
-
-
-                bodies.forEach(body => {
-                    body.Draw();
-                });
-
-            }
             this.isRefreshNeeded = false;
         }
     }
 
-    static DrawPlayerArrow(player: Player) {
+    DrawMap() {
+        if (KeyPressController.getKey(showMapKey) && this.isRefreshNeeded) {
+            this.ClearCanvas();
+            // for (let i = -viewAngle / 2; i < (viewAngle + 1) / 2; i += iteratingNumber) {
+            //     this.DrawRay(player.position, getPosition(i), green);
+            // }
+
+            this.DrawPlayerArrow(player);
+
+
+            bodies.forEach(body => {
+                body.Draw(this);
+            });
+            this.isRefreshNeeded = false;
+        } else {
+            this.ClearCanvas();
+        }
+    }
+
+    DrawPlayerArrow(player: Player) {
         let line_length = 3;
         const rotatePoint = (point: Point) => {
             const player_rotation_x = -Math.sin(ConvertDegreeToRadian(player.GetViewDirection()))
@@ -406,7 +476,7 @@ class CanvasManager {
         this.DrawLine(arrow_head_right, line_end_position, red);
     }
 
-    static DrawSegment(segment: Segment) {
+    DrawSegment(segment: Segment) {
         const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
 
         const width: number = (canvasWidth / viewAngle * segment.modifier) + 1;
@@ -418,19 +488,19 @@ class CanvasManager {
         this.ctx.fillRect(segment.position.x - width / 2, segment.position.y - height / 2, width, height);
     }
 
-    static DrawRect(start: Point, width: number, height: number, color: Color) {
+    DrawRect(start: Point, width: number, height: number, color: Color) {
         this.setColor(color);
         this.ctx.fillRect(start.x, start.y, width, height);
     }
 
-    static DrawDot(position: Point, color: Color, radius: number) {
+    DrawDot(position: Point, color: Color, radius: number) {
         this.ctx.beginPath();
         this.setColorAlpha(color);
         this.ctx.arc(position.x, position.y, radius, 0, 2 * Math.PI);
         this.ctx.fill();
     }
 
-    static DrawLine(start: Point, end: Point, color: Color) {
+    DrawLine(start: Point, end: Point, color: Color) {
         this.ctx.beginPath();
         this.ctx.moveTo(start.x, start.y);
         this.ctx.lineTo(end.x, end.y);
@@ -438,12 +508,12 @@ class CanvasManager {
         this.ctx.stroke();
     }
 
-    static DrawRay(start: Point, end: Point, color: Color) {
+    DrawRay(start: Point, end: Point, color: Color) {
         const rayEnd = this.getIntersectingPosition(start, end);
         this.DrawLine(start, rayEnd, color);
     }
 
-    static getIntersectingPosition(start: Point, end: Point): Point {
+    getIntersectingPosition(start: Point, end: Point): Point {
         const line = new Line(start, end);
 
         let closestPoint = end;
@@ -467,32 +537,45 @@ class CanvasManager {
         return closestPoint;
     }
 
-    static getDistanceForSegment(start: Point, end: Point): number {
+    getDistanceForSegment(start: Point, end: Point): number {
         const closestPoint = this.getIntersectingPosition(start, end);
         return start.Distance(closestPoint);
     }
 
-    static ClearCanvas() {
+    ClearCanvas() {
         const [canvasWidth, canvasHeight] = [this.canvas.width, this.canvas.height];
         this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
     }
 
-    static onResize(e: UIEvent) {
+    onResize(e: UIEvent) {
         this.canvas.width = screen.width;
         this.canvas.height = screen.height;
         this.isRefreshNeeded = true;
     }
 
-    private static setColor(color: Color) {
+    private setColor(color: Color) {
         this.ctx.strokeStyle = `rgb(${color.Red},${color.Green},${color.Blue},255)`;
         this.ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue},255)`;
     };
 
-    private static setColorAlpha(color: Color) {
+    private setColorAlpha(color: Color) {
         this.ctx.strokeStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
         this.ctx.fillStyle = `rgb(${color.Red},${color.Green},${color.Blue},${color.Alpha})`;
     };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // -------------------------------- Global Variables --------------------------------
 
@@ -502,16 +585,29 @@ const red: Color = new Color(255, 0, 0, 255);
 const green: Color = new Color(0, 255, 0, 255);
 const blue: Color = new Color(0, 0, 255, 255);
 
-CanvasManager.Setup(<HTMLCanvasElement>document.getElementById("wallCanvas"))
+let wallCanvas = new CanvasManager(<HTMLCanvasElement>document.getElementById("wallCanvas"))
+let mapCanvas = new CanvasManager(<HTMLCanvasElement>document.getElementById("mapCanvas"))
 
 const viewAngle = 45;
-const player: Player = new Player(CanvasManager.GetWidth() / 2, CanvasManager.GetHeight() / 2);
+const player: Player = new Player(wallCanvas.GetWidth() / 2, wallCanvas.GetHeight() / 2);
 const bodies: CanvasBody[] = [];
+
+
+
+
+
+
+
+
+
+
+
+
 
 // -------------------------------- Game Logic --------------------------------
 
 function Setup() {
-    const [cW, cH] = [CanvasManager.GetWidth(), CanvasManager.GetHeight()];
+    const [cW, cH] = [wallCanvas.GetWidth(), wallCanvas.GetHeight()];
     const l1 = new Line(new Point(0, 0), new Point(cW, 0));
     const l2 = new Line(new Point(cW, 0), new Point(cW, cH));
     const l3 = new Line(new Point(cW, cH), new Point(0, cH));
@@ -539,7 +635,8 @@ function Main() {
 
     addEventListener("keydown", (e) => KeyPressController.Listen(e, true), false);
     addEventListener("keyup", (e) => KeyPressController.Listen(e, false), false);
-    addEventListener("resize", (e) => CanvasManager.onResize(e), false);
+    addEventListener("resize", (e) => wallCanvas.onResize(e), false);
+    addEventListener("resize", (e) => mapCanvas.onResize(e), false);
 
     let lastTime = 0;
     let requiredElapsed = 1000 / 60; // 60 FPS
@@ -553,10 +650,10 @@ function Main() {
         const elapsed = now - lastTime;
 
         if (elapsed > requiredElapsed) {
-            //CanvasManager.ClearCanvas();
+            //wallCanvas.ClearCanvas();
             KeyPressController.HandleKeys(elapsed / 1000);
-            CanvasManager.DrawFrame(player);
-
+            wallCanvas.DrawFrame(player);
+            mapCanvas.DrawMap();
 
             lastTime = now;
         }
