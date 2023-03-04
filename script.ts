@@ -375,11 +375,11 @@ class CanvasManager {
 
                 this.DrawPlayerArrow(player);
 
-                if (KeyPressController.getKey(showMapKey)) {
-                    bodies.forEach(body => {
-                        body.Draw();
-                    });
-                }
+
+                bodies.forEach(body => {
+                    body.Draw();
+                });
+
             }
             this.isRefreshNeeded = false;
         }
