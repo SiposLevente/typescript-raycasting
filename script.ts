@@ -203,36 +203,6 @@ class Player {
     public SetPosition(newPosition: Point) {
         player.position = newPosition;
     }
-
-    // public Forward(delta: number) {
-    //     this.Go(player.speed * delta);
-    // }
-
-    // public Backwards(delta: number) {
-    //     this.Go(-player.speed * delta);
-    // }
-
-    // public GoRight(delta: number) {
-    //     this.GoSideWays(player.speed * delta)
-    // }
-
-    // public GoLeft(delta: number) {
-    //     this.GoSideWays(-player.speed * delta)
-    // }
-
-    // private Move(angle: number, amount: number) {
-    //     this.position = this.position.AddVector(angle, amount);
-    // }
-
-    // private Go(amount: number) {
-    //     const angle = this.view_direction * Math.PI / 180;
-    //     this.Move(angle, amount);
-    // }
-
-    // private GoSideWays(amount: number) {
-    //     const angle = (this.view_direction + 90) % 360 * Math.PI / 180;
-    //     this.Move(angle, amount);
-    // }
 }
 
 // -------------------------------- Keypress Controller Class --------------------------------
@@ -411,7 +381,6 @@ class CanvasManager {
                     });
                 }
             }
-            console.log("redrawn")
             this.isRefreshNeeded = false;
         }
     }
