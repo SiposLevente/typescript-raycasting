@@ -161,7 +161,7 @@ class Player {
     constructor(x: number, y: number) {
         this.position = new Point(x, y);
         this.speed = 100;
-        this.turnSpeed = 5;
+        this.turnSpeed = 1;
         this.viewDirection = 0;
     }
 
@@ -207,7 +207,7 @@ class Player {
         if (direction == Direction.Left) {
             multiplier = -1
         }
-        return this.position.AddVector(angle, multiplier * player.speed * delta);
+        return this.position.AddVector(angle, multiplier * player.speed / 3 * delta);
     }
 
     public Turn(degree: number) {
@@ -238,12 +238,11 @@ class Player {
 
 // -------------------------------- Keypress Controller Class --------------------------------
 
-const sprintKey = "s";
-const strafeKey = "a";
-const turnLeftKey = "ArrowLeft";
-const turnRightKey = "ArrowRight";
-const goForwardKey = "ArrowUp";
-const goBackwardsKey = "ArrowDown";
+const sprintKey = "v";
+const goLeftKey = "a";
+const goRightKey = "d";
+const goForwardKey = "w";
+const goBackwardsKey = "s";
 const showMapKey = "t";
 
 class KeyPressController {
@@ -277,19 +276,13 @@ class KeyPressController {
         }
 
         const keyBinds = new Map([
-            [turnLeftKey, () => {
-                if (this.getKey(strafeKey)) {
-                    ifValidMove(Direction.Left);
-                } else {
-                    player.Turn(-8 * delta * multiplier)
-                }
+            [goLeftKey, () => {
+                ifValidMove(Direction.Left);
             }],
-            [turnRightKey, () => {
-                if (this.getKey(strafeKey)) {
-                    ifValidMove(Direction.Right);
-                } else {
-                    player.Turn(8 * delta * multiplier)
-                }
+            [goRightKey, () => {
+
+                ifValidMove(Direction.Right);
+
             }],
             [goForwardKey, () => {
                 ifValidMove(Direction.Forward);
@@ -307,15 +300,14 @@ class KeyPressController {
             const bind = keyBinds.get(key);
 
             if (bind && value) {
-                wallCanvas.isRefreshNeeded = true;
-                mapCanvas.isRefreshNeeded = true;
-                bind()
+                RequestRefresh();
+                bind();
             }
         });
     }
 
     public static Listen(e: KeyboardEvent, modificationType: boolean) {
-        const keys: string[] = [strafeKey, sprintKey, showMapKey, turnLeftKey, turnRightKey, goForwardKey, goBackwardsKey];
+        const keys: string[] = [sprintKey, showMapKey, goLeftKey, goRightKey, goForwardKey, goBackwardsKey];
 
         if (keys.includes(e.key)) {
             this.keys.set(e.key, modificationType);
@@ -326,9 +318,6 @@ class KeyPressController {
         return this.keys.get(key) ?? false;
     }
 }
-
-
-
 
 
 
@@ -358,7 +347,11 @@ function ConvertDegreeToRadian(degree: number): number {
 }
 
 
-
+function RequestRefresh(): void {
+    uiCanvas.isRefreshNeeded = true;
+    wallCanvas.isRefreshNeeded = true;
+    mapCanvas.isRefreshNeeded = true;
+}
 
 
 
@@ -387,8 +380,8 @@ class Segment {
 }
 
 class CanvasManager {
-    private canvas: HTMLCanvasElement;
-    private ctx: CanvasRenderingContext2D;
+    public canvas: HTMLCanvasElement;
+    public ctx: CanvasRenderingContext2D;
     public isRefreshNeeded: boolean;
 
     public constructor(canvas: HTMLCanvasElement) {
@@ -587,6 +580,7 @@ const blue: Color = new Color(0, 0, 255, 255);
 
 let wallCanvas = new CanvasManager(<HTMLCanvasElement>document.getElementById("wallCanvas"))
 let mapCanvas = new CanvasManager(<HTMLCanvasElement>document.getElementById("mapCanvas"))
+let uiCanvas = new CanvasManager(<HTMLCanvasElement>document.getElementById("uiCanvas"))
 
 const viewAngle = 45;
 const player: Player = new Player(wallCanvas.GetWidth() / 2, wallCanvas.GetHeight() / 2);
@@ -605,6 +599,15 @@ const bodies: CanvasBody[] = [];
 
 
 // -------------------------------- Game Logic --------------------------------
+
+uiCanvas.canvas.addEventListener("click", async () => {
+    await uiCanvas.canvas.requestPointerLock();
+});
+
+uiCanvas.canvas.addEventListener("mousemove", async (event) => {
+    player.Turn(event.movementX / 75);
+    RequestRefresh();
+});
 
 function Setup() {
     const [cW, cH] = [wallCanvas.GetWidth(), wallCanvas.GetHeight()];
